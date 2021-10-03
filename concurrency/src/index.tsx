@@ -5,8 +5,12 @@ import Exchanger from "./Exchanger";
 
 function App() {
     return <>
-        <h1>ConCurrency</h1>
-        <Exchanger />
+        <div style={{display: "flex", justifyContent: "center"}}>
+            <h1>ConCurrency</h1>
+        </div>
+        <div className="wrapper">
+            <Exchanger />
+        </div>
     </>
 }
 

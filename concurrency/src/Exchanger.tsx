@@ -6,10 +6,10 @@ import Rates from "./Rates";
 
 function Exchanger() {
     let [rates, setRates] = useState({} as Rates);
-    let [inputOne, setInputOne] = useState("");
+    let [inputOne, setInputOne] = useState("0");
     let [selectedOne, setSelectedOne] = useState("USD");
     let [selectedTwo, setSelectedTwo] = useState("EUR");
-    let [result, setResult] = useState("");
+    let [result, setResult] = useState("0.00");
 
     useEffect(() => {
         axios.get(process.env.API_URL).then(resp => {
@@ -50,18 +50,22 @@ function Exchanger() {
 
     if (Object.keys(rates).length) {
         return <>
-            <input type="text" defaultValue={inputOne} onChange={handleInputOne} />
-            <input type="text" value={result} readOnly />
+            <div className="grid-container">
+                <input type="text" defaultValue={inputOne} onChange={handleInputOne} />
+                <input type="text" value={result} readOnly />
+                <select defaultValue={selectedOne} onChange={handleSelectedOne}>
+                    {Object.keys(rates.conversion_rates).map((currency, index) => <option key={index}>{currency}</option>)}
+                </select>
+                <select defaultValue={selectedTwo} onChange={handleSelectedTwo}>
+                    {Object.keys(rates.conversion_rates).map((currency, index) => <option key={index}>{currency}</option>)}
+                </select>
+
+            </div>
+
             <br />
-            <select defaultValue={selectedOne} onChange={handleSelectedOne}>
-                {Object.keys(rates.conversion_rates).map((currency, index) => <option key={index}>{currency}</option>)}
-            </select>
-
-            <select defaultValue={selectedTwo} onChange={handleSelectedTwo}>
-                {Object.keys(rates.conversion_rates).map((currency, index) => <option key={index}>{currency}</option>)}
-            </select>
-
-            <button onClick={handleConvertClick}>Convert!</button>
+            <div style={{display: "flex", justifyContent: "center"}}>
+                <button onClick={handleConvertClick}>Convert!</button>
+            </div>
         </>
     } else {
         return <h1>Loading...</h1>

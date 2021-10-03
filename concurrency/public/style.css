@@ -1,0 +1,25 @@
+.grid-container {
+    display: grid;
+    grid-template-columns: auto auto;
+}
+
+div.wrapper{
+	/*Text margin*/
+	margin: auto;
+	width: 60%;
+	padding:  10px;
+}
+
+.convert-button {
+    position: relative;
+    left: auto;
+    right: auto;
+}
+
+input + input {
+    margin-left: 1.5rem;
+}
+
+select + select {
+    margin-left: 1.5rem;
+}
