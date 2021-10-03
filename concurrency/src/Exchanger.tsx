@@ -1,190 +1,68 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import Rates from "./Rates";
 
-type Rates = {
-    result: string,
-    documentation: string,
-    terms_of_use: string,
-    time_last_update_unix: number,
-    time_last_update_utc: string,
-    time_next_update_unix: number,
-    time_next_update_utc: string,
-    base_code: string,
-    conversion_rates: {
-        USD: number,
-        AED: number,
-        AFN: number,
-        ALL: number,
-        AMD: number,
-        ANG: number,
-        AOA: number,
-        ARS: number,
-        AUD: number,
-        AWG: number,
-        AZN: number,
-        BAM: number,
-        BBD: number,
-        BDT: number,
-        BGN: number,
-        BHD: number,
-        BIF: number,
-        BMD: number,
-        BND: number,
-        BOB: number,
-        BRL: number,
-        BSD: number,
-        BTN: number,
-        BWP: number,
-        BYN: number,
-        BZD: number,
-        CAD: number,
-        CDF: number,
-        CHF: number,
-        CLP: number,
-        CNY: number,
-        COP: number,
-        CRC: number,
-        CUC: number,
-        CUP: number,
-        CVE: number,
-        CZK: number,
-        DJF: number,
-        DKK: number,
-        DOP: number,
-        DZD: number,
-        EGP: number,
-        ERN: number,
-        ETB: number,
-        EUR: number,
-        FJD: number,
-        FKP: number,
-        FOK: number,
-        GBP: number,
-        GEL: number,
-        GGP: number,
-        GHS: number,
-        GIP: number,
-        GMD: number,
-        GNF: number,
-        GTQ: number,
-        GYD: number,
-        HKD: number,
-        HNL: number,
-        HRK: number,
-        HTG: number,
-        HUF: number,
-        IDR: number,
-        ILS: number,
-        IMP: number,
-        INR: number,
-        IQD: number,
-        IRR: number,
-        ISK: number,
-        JMD: number,
-        JOD: number,
-        JPY: number,
-        KES: number,
-        KGS: number,
-        KHR: number,
-        KID: number,
-        KMF: number,
-        KRW: number,
-        KWD: number,
-        KYD: number,
-        KZT: number,
-        LAK: number,
-        LBP: number,
-        LKR: number,
-        LRD: number,
-        LSL: number,
-        LYD: number,
-        MAD: number,
-        MDL: number,
-        MGA: number,
-        MKD: number,
-        MMK: number,
-        MNT: number,
-        MOP: number,
-        MRU: number,
-        MUR: number,
-        MVR: number,
-        MWK: number,
-        MXN: number,
-        MYR: number,
-        MZN: number,
-        NAD: number,
-        NGN: number,
-        NIO: number,
-        NOK: number,
-        NPR: number,
-        NZD: number,
-        OMR: number,
-        PAB: number,
-        PEN: number,
-        PGK: number,
-        PHP: number,
-        PKR: number,
-        PLN: number,
-        PYG: number,
-        QAR: number,
-        RON: number,
-        RSD: number,
-        RUB: number,
-        RWF: number,
-        SAR: number,
-        SBD: number,
-        SCR: number,
-        SDG: number,
-        SEK: number,
-        SGD: number,
-        SHP: number,
-        SLL: number,
-        SOS: number,
-        SRD: number,
-        SSP: number,
-        STN: number,
-        SYP: number,
-        SZL: number,
-        THB: number,
-        TJS: number,
-        TMT: number,
-        TND: number,
-        TOP: number,
-        TRY: number,
-        TTD: number,
-        TVD: number,
-        TWD: number,
-        TZS: number,
-        UAH: number,
-        UGX: number,
-        UYU: number,
-        UZS: number,
-        VES: number,
-        VND: number,
-        VUV: number,
-        WST: number,
-        XAF: number,
-        XCD: number,
-        XDR: number,
-        XOF: number,
-        XPF: number,
-        YER: number,
-        ZAR: number,
-        ZMW: number
-    }
-}
+
 
 function Exchanger() {
     let [rates, setRates] = useState({} as Rates);
+    let [inputOne, setInputOne] = useState("");
+    let [selectedOne, setSelectedOne] = useState("USD");
+    let [selectedTwo, setSelectedTwo] = useState("EUR");
+    let [result, setResult] = useState("");
 
     useEffect(() => {
         axios.get(process.env.API_URL).then(resp => {
             setRates(resp.data);
-        })
+        });
     }, []);
 
+    function handleSelectedOne(event: any) {
+        setSelectedOne(event.target.value);
+    }
+
+    function handleInputOne(event: any) {
+        setInputOne(event.target.value);
+    }
+
+    function handleSelectedTwo(event: any) {
+        setSelectedTwo(event.target.value);
+    }
+
+    function handleConvertClick() {
+        let inp = Number(inputOne);
+        if (Number.isNaN(inp)) {
+            alert("Input must be a number!");
+            return;
+        }
+
+        let inpCurrency = selectedOne;
+        let outCurrency = selectedTwo;
+
+        // First, convert the input to USD
+        let exchange_rate = rates.conversion_rates[inpCurrency];
+        let usd = inp / exchange_rate;
+
+        // Then, convert the USD to the chosen output currency
+        exchange_rate = rates.conversion_rates[outCurrency];
+        setResult((usd * exchange_rate).toFixed(2)); // Round to 2 decimal places
+    }
+
     if (Object.keys(rates).length) {
-        return <h1>{rates.conversion_rates.EUR}</h1>
+        return <>
+            <input type="text" defaultValue={inputOne} onChange={handleInputOne} />
+            <input type="text" value={result} readOnly />
+            <br />
+            <select defaultValue={selectedOne} onChange={handleSelectedOne}>
+                {Object.keys(rates.conversion_rates).map((currency, index) => <option key={index}>{currency}</option>)}
+            </select>
+
+            <select defaultValue={selectedTwo} onChange={handleSelectedTwo}>
+                {Object.keys(rates.conversion_rates).map((currency, index) => <option key={index}>{currency}</option>)}
+            </select>
+
+            <button onClick={handleConvertClick}>Convert!</button>
+        </>
     } else {
         return <h1>Loading...</h1>
     }
