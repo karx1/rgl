@@ -12,9 +12,17 @@ function Exchanger() {
     let [result, setResult] = useState("0.00");
 
     useEffect(() => {
-        axios.get(process.env.API_URL).then(resp => {
-            setRates(resp.data);
-        });
+        let saved = Number(localStorage.getItem("saved"));
+        if (Math.floor(Date.now() / 1000) - saved > 3600) {
+            axios.get(process.env.API_URL).then(resp => {
+                setRates(resp.data);
+                localStorage.setItem("saved", Math.floor(Date.now() / 1000).toString());
+                localStorage.setItem("rates", JSON.stringify(resp.data));
+            });
+        } else {
+            let data = JSON.parse(localStorage.getItem("rates"));
+            setRates(data);
+        }
     }, []);
 
     function handleSelectedOne(event: any) {
@@ -63,7 +71,7 @@ function Exchanger() {
             </div>
 
             <br />
-            <div style={{display: "flex", justifyContent: "center"}}>
+            <div style={{ display: "flex", justifyContent: "center" }}>
                 <button onClick={handleConvertClick}>Convert!</button>
             </div>
         </>
