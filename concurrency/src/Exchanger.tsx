@@ -13,8 +13,9 @@ function Exchanger() {
 
     useEffect(() => {
         let saved = Number(localStorage.getItem("saved"));
-        if (Math.floor(Date.now() / 1000) - saved > 86400) { // Cache rates for 24 hours
+        if (Math.floor(Date.now() / 1000) - saved > 86400) {
             // If it's been more tha 24 hours, fetch new rates
+            // The timeout is 24 hours because that's how often the exchangerate-api refreshes its data
             axios.get(process.env.API_URL).then(resp => {
                 setRates(resp.data);
                 localStorage.setItem("saved", Math.floor(Date.now() / 1000).toString());
