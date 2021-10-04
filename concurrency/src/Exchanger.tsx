@@ -56,15 +56,25 @@ function Exchanger() {
         setResult((usd * exchange_rate).toFixed(2)); // Round to 2 decimal places
     }
 
+    function handleSwapClick() {
+        const temp1 = selectedOne;
+        setSelectedOne(selectedTwo);
+        setSelectedTwo(temp1);
+
+        const temp2 = inputOne;
+        setInputOne(result);
+        setResult(temp2);
+    }
+
     if (Object.keys(rates).length) {
         return <>
             <div className="grid-container">
-                <input type="text" defaultValue={inputOne} onChange={handleInputOne} />
+                <input type="text" value={inputOne} onChange={handleInputOne} />
                 <input type="text" value={result} readOnly />
-                <select defaultValue={selectedOne} onChange={handleSelectedOne}>
+                <select value={selectedOne} onChange={handleSelectedOne}>
                     {Object.keys(rates.conversion_rates).map((currency, index) => <option key={index}>{currency}</option>)}
                 </select>
-                <select defaultValue={selectedTwo} onChange={handleSelectedTwo}>
+                <select value={selectedTwo} onChange={handleSelectedTwo}>
                     {Object.keys(rates.conversion_rates).map((currency, index) => <option key={index}>{currency}</option>)}
                 </select>
 
@@ -72,6 +82,7 @@ function Exchanger() {
 
             <br />
             <div style={{ display: "flex", justifyContent: "center" }}>
+                <button onClick={handleSwapClick}>Swap</button>
                 <button onClick={handleConvertClick}>Convert!</button>
             </div>
         </>

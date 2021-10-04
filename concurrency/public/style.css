@@ -23,3 +23,7 @@ input + input {
 select + select {
     margin-left: 1.5rem;
 }
+
+button + button {
+    margin-left: 1.5rem;
+}
