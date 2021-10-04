@@ -1,6 +1,7 @@
 .grid-container {
     display: grid;
     grid-template-columns: auto auto;
+    
 }
 
 div.wrapper{
@@ -10,13 +11,8 @@ div.wrapper{
 	padding:  10px;
 }
 
-.convert-button {
-    position: relative;
-    left: auto;
-    right: auto;
-}
-
-input + input {
+/* All inputs preceded by another input */
+input + input { 
     margin-left: 1.5rem;
 }
 
