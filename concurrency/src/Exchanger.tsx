@@ -13,13 +13,15 @@ function Exchanger() {
 
     useEffect(() => {
         let saved = Number(localStorage.getItem("saved"));
-        if (Math.floor(Date.now() / 1000) - saved > 3600) {
+        if (Math.floor(Date.now() / 1000) - saved > 86400) { // Cache rates for 24 hours
+            // If it's been more tha 24 hours, fetch new rates
             axios.get(process.env.API_URL).then(resp => {
                 setRates(resp.data);
                 localStorage.setItem("saved", Math.floor(Date.now() / 1000).toString());
                 localStorage.setItem("rates", JSON.stringify(resp.data));
             });
         } else {
+            // Otherwise, just grab them from localstorage
             let data = JSON.parse(localStorage.getItem("rates"));
             setRates(data);
         }
@@ -72,6 +74,7 @@ function Exchanger() {
                 <input type="text" value={inputOne} onChange={handleInputOne} />
                 <input type="text" value={result} readOnly />
                 <select value={selectedOne} onChange={handleSelectedOne}>
+                    {/* Map currency names to dropdown values */}
                     {Object.keys(rates.conversion_rates).map((currency, index) => <option key={index}>{currency}</option>)}
                 </select>
                 <select value={selectedTwo} onChange={handleSelectedTwo}>
