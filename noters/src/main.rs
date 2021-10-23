@@ -1,6 +1,12 @@
+mod console;
 mod local_storage;
 
 use sycamore::prelude::*;
+
+
+macro_rules! log {
+    ($($t:tt)*) => (console::log_raw(&format_args!($($t)*).to_string()))
+}
 
 fn main() {
 
@@ -12,6 +18,7 @@ fn main() {
         for val in keys_raw {
             if val.is_string() {
                 if let Some(res) = val.as_string() {
+                    log!("{}", res);
                     new_vec.push(res);
                 }
             }
