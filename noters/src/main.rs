@@ -9,7 +9,7 @@ macro_rules! log {
 }
 
 fn main() {
-
+    #[allow(unused_variables)] // Allow because localStorage might be empty
     let keys = {
         let mut new_vec: Vec<String> = Vec::new();
 
@@ -28,7 +28,6 @@ fn main() {
     };
 
     sycamore::render(|| template! {
-        p { (format!("{:#?}", keys)) }
-        p { (local_storage::get_item("state")) }
+        h1(style="text-align: center") { "NoteRS" }
     });
 }
