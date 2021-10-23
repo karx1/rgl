@@ -165,7 +165,9 @@ dependencies = [
 name = "noters"
 version = "0.1.0"
 dependencies = [
+ "js-sys",
  "sycamore",
+ "wasm-bindgen",
 ]
 
 [[package]]
