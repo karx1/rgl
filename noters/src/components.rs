@@ -1,6 +1,5 @@
-use sycamore::prelude::*;
 use crate::date::get_current_time_millis;
-
+use sycamore::prelude::*;
 
 use crate::{local_storage, AppMode};
 
@@ -15,7 +14,6 @@ impl DefaultViewProps {
         Self { mode, selected }
     }
 }
-
 
 #[component(DefaultView<G>)]
 pub fn default_view(props: DefaultViewProps) -> Template<G> {
@@ -73,8 +71,8 @@ pub fn create_view(props: CreateViewProps) -> Template<G> {
     let selected = props.clone().selected;
 
     let save = cloned!((mode, selected, value) => move |_| {
-        let timestamp = &*selected.get();
-        let note = &*value.get();
+        let timestamp = &*selected.get(); // deref to turn it into a String, then borrow again to make a &str
+        let note = &*value.get(); // deref to turn it into a String, then borrow again to make a &str
 
         local_storage::set_item(timestamp, note);
         mode.set(AppMode::Default); // Return to default screen
