@@ -28,6 +28,7 @@ fn truncate(s: String, max_chars: usize) -> String {
 pub fn default_view(props: DefaultViewProps) -> Template<G> {
     let mode = props.clone().mode;
     let selected = props.clone().selected;
+
     let templates = Template::new_fragment({
         let mut new_vec: Vec<Template<G>> = Vec::new();
 
@@ -37,7 +38,14 @@ pub fn default_view(props: DefaultViewProps) -> Template<G> {
             if val.is_string() {
                 if let Some(res) = val.as_string() {
                     let note = local_storage::get_item(&res);
-                    let trunced = truncate(note, 100);
+                    let trunced = truncate(note, 75);
+
+                    let timestamp = format!("Created at {}", time_hr(res.parse::<u64>().unwrap()));
+
+                    let start_edit = cloned!((mode, selected) => move |_| {
+                        selected.set((&res[..]).to_string());
+                        mode.set(AppMode::Edit);
+                    });
 
                     new_vec.push(template! {
                         div(class="card") {
@@ -45,8 +53,11 @@ pub fn default_view(props: DefaultViewProps) -> Template<G> {
                             br
                             br
                             small {
-                                (format!("Created at {}", time_hr(res.parse::<u64>().unwrap())))
+                                (timestamp)
                             }
+                            br
+                            button(on:click=start_edit) { "Edit" }
+                            button(class="button-danger") { "Delete" }
                         }
                     });
                 }
@@ -90,6 +101,54 @@ pub fn create_view(props: CreateViewProps) -> Template<G> {
     let value = Signal::new(String::new());
     let mode = props.clone().mode;
     let selected = props.clone().selected;
+
+    let save = cloned!((mode, selected, value) => move |_| {
+        let timestamp = &*selected.get(); // deref to turn it into a String, then borrow again to make a &str
+        let note = &*value.get(); // deref to turn it into a String, then borrow again to make a &str
+
+        log!("{}", timestamp);
+        local_storage::set_item(timestamp, note);
+        mode.set(AppMode::Default); // Return to default screen
+    });
+
+    let go_back = cloned!((mode) => move |_| {
+        mode.set(AppMode::Default); // Return to default screen
+    });
+
+    template! {
+        div(class="pull-left") {
+            button(on:click=go_back) { "Go Back" }
+        }
+        div(style="display: flex; flex-direction: column; height: 75vh") {
+           textarea(bind:value=value, style="resize: vertical; flex-grow: 1")
+           br
+           div(style="text-align: center;") {
+               button(on:click=save) { "Save" }
+           }
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct EditViewProps {
+    mode: Signal<AppMode>,
+    selected: StateHandle<String>,
+}
+
+impl EditViewProps {
+    pub fn new(mode: Signal<AppMode>, selected: StateHandle<String>) -> Self {
+        Self { mode, selected }
+    }
+}
+
+#[component(EditView<G>)]
+pub fn edit_view(props: EditViewProps) -> Template<G> {
+    let mode = props.clone().mode;
+    let selected = props.clone().selected;
+
+    let default = local_storage::get_item(&*selected.get());
+
+    let value = Signal::new(default);
 
     let save = cloned!((mode, selected, value) => move |_| {
         let timestamp = &*selected.get(); // deref to turn it into a String, then borrow again to make a &str

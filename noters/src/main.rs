@@ -18,6 +18,7 @@ macro_rules! log {
 pub enum AppMode {
     Default, // note list view
     Create,  // note create view (might be merged into edit)
+    Edit,    // note edit view
 }
 
 fn main() {
@@ -35,6 +36,9 @@ fn main() {
                     },
                     AppMode::Create => template! {
                        CreateView(CreateViewProps::new(cloned!((mode) => mode), cloned!((selected) => selected.handle())))
+                    },
+                    AppMode::Edit => template! {
+                        EditView(EditViewProps::new(cloned!((mode) => mode), cloned!((selected) => selected.handle())))
                     },
                     _ => template! {
                         DefaultView(DefaultViewProps::new(cloned!((mode) => mode), cloned!((selected) => selected)))

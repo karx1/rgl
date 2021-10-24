@@ -20,3 +20,13 @@
     padding: .6rem 1.0rem .7rem;
     margin-bottom: 1.5rem;
 }
+
+.button-danger {
+    background-color: red;
+    border-color: red;
+    color: white;
+}
+
+button + button {
+    margin-left: .75rem;
+}
