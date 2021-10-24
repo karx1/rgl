@@ -3,3 +3,13 @@
     width: 60%;
     padding: 10px;
 }
+
+.pull-right {
+    text-align: right;
+    border: 0;
+}
+
+.pull-left {
+    text-align: left;
+    border: 0;
+}
