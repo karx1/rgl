@@ -1,6 +1,9 @@
 use sycamore::prelude::*;
 
-use crate::{AppMode, date::{get_current_time_millis, time_hr}, local_storage, log};
+use crate::{
+    date::{get_current_time_millis, time_hr},
+    local_storage, log, AppMode,
+};
 
 #[derive(Clone, Debug)]
 pub struct DefaultViewProps {
@@ -15,10 +18,10 @@ impl DefaultViewProps {
 }
 
 fn truncate(s: String, max_chars: usize) -> String {
-    format!("{}...", match s.char_indices().nth(max_chars) {
+    match s.char_indices().nth(max_chars) {
         None => s,
-        Some((idx, _)) => (&s[..idx]).to_string()
-    })
+        Some((idx, _)) => format!("{}...", &s[..idx]),
+    }
 }
 
 #[component(DefaultView<G>)]
@@ -36,8 +39,8 @@ pub fn default_view(props: DefaultViewProps) -> Template<G> {
                     let note = local_storage::get_item(&res);
                     let trunced = truncate(note, 100);
 
-                    new_vec.push(template! { 
-                        div(class="card") { 
+                    new_vec.push(template! {
+                        div(class="card") {
                             (trunced)
                             br
                             br
