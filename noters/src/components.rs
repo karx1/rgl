@@ -1,7 +1,7 @@
 use sycamore::prelude::*;
 
 use crate::{
-    date::{get_current_time_millis, time_hr},
+    date::{self, get_current_time_millis, time_hr},
     local_storage, log, AppMode,
 };
 
@@ -41,6 +41,12 @@ pub fn default_view(props: DefaultViewProps) -> Template<G> {
                     let trunced = truncate(note, 75);
 
                     let timestamp = format!("Created at {}", time_hr(res.parse::<u64>().unwrap()));
+                    let new = (&res[..]).to_string();
+
+                    let start_detail = cloned!((mode, selected) => move |_| {
+                        selected.set((&new[..]).to_string());
+                        mode.set(AppMode::Detail);
+                    });
 
                     let start_edit = cloned!((mode, selected) => move |_| {
                         selected.set((&res[..]).to_string());
@@ -56,6 +62,7 @@ pub fn default_view(props: DefaultViewProps) -> Template<G> {
                                 (timestamp)
                             }
                             br
+                            button(on:click=start_detail) { "View" }
                             button(on:click=start_edit) { "Edit" }
                             button(class="button-danger") { "Delete" }
                         }
@@ -173,6 +180,50 @@ pub fn edit_view(props: EditViewProps) -> Template<G> {
            div(style="text-align: center;") {
                button(on:click=save) { "Save" }
            }
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct NoteDetailViewProps {
+    mode: Signal<AppMode>,
+    selected: StateHandle<String>,
+}
+
+impl NoteDetailViewProps {
+    pub fn new(mode: Signal<AppMode>, selected: StateHandle<String>) -> Self {
+        Self { mode, selected }
+    }
+}
+
+#[component(NoteDetailView<G>)]
+pub fn note_detail_view(props: NoteDetailViewProps) -> Template<G> {
+    let mode = props.clone().mode;
+    let selected = props.clone().selected;
+
+    let timestamp_raw: &str = &*selected.get();
+    let timestamp = format!(
+        "Created at {}",
+        date::time_hr(timestamp_raw.parse::<u64>().unwrap())
+    );
+
+    let value = local_storage::get_item(timestamp_raw);
+
+    let go_back = cloned!((mode) => move |_| {
+        mode.set(AppMode::Default);
+    });
+
+    template! {
+        div(class="pull-left") {
+            button(on:click=go_back) { "Go Back" }
+        }
+        div(class="card") {
+            (value)
+            br
+            br
+            small {
+                (timestamp)
+            }
         }
     }
 }
