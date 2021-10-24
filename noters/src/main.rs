@@ -8,8 +8,9 @@ mod local_storage;
 use sycamore::prelude::*;
 
 #[allow(unused_macros)]
+#[macro_export]
 macro_rules! log {
-    ($($t:tt)*) => (console::log_raw(&format_args!($($t)*).to_string()))
+    ($($t:tt)*) => (crate::console::log_raw(&format_args!($($t)*).to_string()))
 }
 
 #[derive(Debug)]

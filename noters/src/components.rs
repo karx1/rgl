@@ -1,7 +1,6 @@
-use crate::date::get_current_time_millis;
 use sycamore::prelude::*;
 
-use crate::{local_storage, AppMode};
+use crate::{AppMode, date::{get_current_time_millis, time_hr}, local_storage, log};
 
 #[derive(Clone, Debug)]
 pub struct DefaultViewProps {
@@ -13,6 +12,13 @@ impl DefaultViewProps {
     pub fn new(mode: Signal<AppMode>, selected: Signal<String>) -> Self {
         Self { mode, selected }
     }
+}
+
+fn truncate(s: String, max_chars: usize) -> String {
+    format!("{}...", match s.char_indices().nth(max_chars) {
+        None => s,
+        Some((idx, _)) => (&s[..idx]).to_string()
+    })
 }
 
 #[component(DefaultView<G>)]
@@ -27,7 +33,19 @@ pub fn default_view(props: DefaultViewProps) -> Template<G> {
         for val in keys {
             if val.is_string() {
                 if let Some(res) = val.as_string() {
-                    new_vec.push(template! { li { (res) } });
+                    let note = local_storage::get_item(&res);
+                    let trunced = truncate(note, 100);
+
+                    new_vec.push(template! { 
+                        div(class="card") { 
+                            (trunced)
+                            br
+                            br
+                            small {
+                                (format!("Created at {}", time_hr(res.parse::<u64>().unwrap())))
+                            }
+                        }
+                    });
                 }
             }
         }
@@ -46,7 +64,7 @@ pub fn default_view(props: DefaultViewProps) -> Template<G> {
         div(class="pull-right") {
             button(on:click=start_create) { "Create" }
         }
-        ul {
+        div {
             (templates)
         }
     }
@@ -74,6 +92,7 @@ pub fn create_view(props: CreateViewProps) -> Template<G> {
         let timestamp = &*selected.get(); // deref to turn it into a String, then borrow again to make a &str
         let note = &*value.get(); // deref to turn it into a String, then borrow again to make a &str
 
+        log!("{}", timestamp);
         local_storage::set_item(timestamp, note);
         mode.set(AppMode::Default); // Return to default screen
     });

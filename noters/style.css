@@ -13,3 +13,10 @@
     text-align: left;
     border: 0;
 }
+
+.card {
+    border: 0.1rem solid #d1d1d1;
+    border-radius: .4rem;
+    padding: .6rem 1.0rem .7rem;
+    margin-bottom: 1.5rem;
+}
