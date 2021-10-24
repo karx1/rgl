@@ -1,5 +1,6 @@
 use sycamore::prelude::*;
-use wasm_bindgen::prelude::*;
+use crate::date::get_current_time_millis;
+
 
 use crate::{local_storage, AppMode};
 
@@ -15,14 +16,6 @@ impl DefaultViewProps {
     }
 }
 
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_name = getCurrentTimeMillis)]
-    fn get_current_time_millis() -> usize;
-
-    #[wasm_bindgen(js_name = timeHR)]
-    fn time_hr(millis: usize) -> String;
-}
 
 #[component(DefaultView<G>)]
 pub fn default_view(props: DefaultViewProps) -> Template<G> {

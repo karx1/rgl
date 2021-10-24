@@ -2,6 +2,7 @@
 
 mod components;
 mod console;
+mod date;
 mod local_storage;
 
 use sycamore::prelude::*;
