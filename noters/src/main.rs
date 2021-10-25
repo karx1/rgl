@@ -20,6 +20,7 @@ pub enum AppMode {
     Create,  // note create view (might be merged into edit)
     Edit,    // note edit view
     Detail,  // note detail view
+    Delete,  // note delete view
 }
 
 fn main() {
@@ -43,6 +44,9 @@ fn main() {
                     },
                     AppMode::Detail => template! {
                         NoteDetailView(NoteDetailViewProps::new(cloned!((mode) => mode), cloned!((selected) => selected.handle())))
+                    },
+                    AppMode::Delete => template! {
+                        DeleteView(DeleteViewProps::new(cloned!((mode) => mode), cloned!((selected) => selected.handle())))
                     },
                     _ => template! {
                         DefaultView(DefaultViewProps::new(cloned!((mode) => mode), cloned!((selected) => selected)))

@@ -26,8 +26,8 @@ fn truncate(s: String, max_chars: usize) -> String {
 
 #[component(DefaultView<G>)]
 pub fn default_view(props: DefaultViewProps) -> Template<G> {
-    let mode = props.clone().mode;
-    let selected = props.clone().selected;
+    let mode = props.mode;
+    let selected = props.selected;
 
     let templates = Template::new_fragment({
         let mut new_vec: Vec<Template<G>> = Vec::new();
@@ -41,16 +41,22 @@ pub fn default_view(props: DefaultViewProps) -> Template<G> {
                     let trunced = truncate(note, 75);
 
                     let timestamp = format!("Created at {}", time_hr(res.parse::<u64>().unwrap()));
-                    let new = (&res[..]).to_string();
+                    let detail_res = (&res[..]).to_string();
+                    let delete_res = (&res[..]).to_string();
 
                     let start_detail = cloned!((mode, selected) => move |_| {
-                        selected.set((&new[..]).to_string());
+                        selected.set((&detail_res[..]).to_string());
                         mode.set(AppMode::Detail);
                     });
 
                     let start_edit = cloned!((mode, selected) => move |_| {
                         selected.set((&res[..]).to_string());
                         mode.set(AppMode::Edit);
+                    });
+
+                    let start_delete = cloned!((mode, selected) => move |_| {
+                        selected.set((&delete_res[..]).to_string());
+                        mode.set(AppMode::Delete);
                     });
 
                     new_vec.push(template! {
@@ -64,7 +70,7 @@ pub fn default_view(props: DefaultViewProps) -> Template<G> {
                             br
                             button(on:click=start_detail) { "View" }
                             button(on:click=start_edit) { "Edit" }
-                            button(class="button-danger") { "Delete" }
+                            button(class="button-danger", on:click=start_delete) { "Delete" }
                         }
                     });
                 }
@@ -106,8 +112,8 @@ impl CreateViewProps {
 #[component(CreateView<G>)]
 pub fn create_view(props: CreateViewProps) -> Template<G> {
     let value = Signal::new(String::new());
-    let mode = props.clone().mode;
-    let selected = props.clone().selected;
+    let mode = props.mode;
+    let selected = props.selected;
 
     let save = cloned!((mode, selected, value) => move |_| {
         let timestamp = &*selected.get(); // deref to turn it into a String, then borrow again to make a &str
@@ -150,8 +156,8 @@ impl EditViewProps {
 
 #[component(EditView<G>)]
 pub fn edit_view(props: EditViewProps) -> Template<G> {
-    let mode = props.clone().mode;
-    let selected = props.clone().selected;
+    let mode = props.mode;
+    let selected = props.selected;
 
     let default = local_storage::get_item(&*selected.get());
 
@@ -198,8 +204,8 @@ impl NoteDetailViewProps {
 
 #[component(NoteDetailView<G>)]
 pub fn note_detail_view(props: NoteDetailViewProps) -> Template<G> {
-    let mode = props.clone().mode;
-    let selected = props.clone().selected;
+    let mode = props.mode;
+    let selected = props.selected;
 
     let timestamp_raw: &str = &*selected.get();
     let timestamp = format!(
@@ -224,6 +230,43 @@ pub fn note_detail_view(props: NoteDetailViewProps) -> Template<G> {
             small {
                 (timestamp)
             }
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct DeleteViewProps {
+    mode: Signal<AppMode>,
+    selected: StateHandle<String>,
+}
+
+impl DeleteViewProps {
+    pub fn new(mode: Signal<AppMode>, selected: StateHandle<String>) -> Self {
+        Self { mode, selected }
+    }
+}
+
+#[component(DeleteView<G>)]
+pub fn delete_view(props: DeleteViewProps) -> Template<G> {
+    let mode = props.mode;
+    let selected = props.selected;
+
+    let cancel = cloned!((mode) => move |_| {
+        mode.set(AppMode::Default);
+    });
+
+    let confirm = cloned!((selected, mode) => move |_| {
+        local_storage::remove_item(&*selected.get());
+        mode.set(AppMode::Default); // Return to home screen
+    });
+
+    template! {
+        div(class="card", style="text-align: center") {
+            "Are you sure you want to delete this note?"
+            br
+            br
+            button(class="button-danger", on:click=confirm) { "Delete" }
+            button(on:click=cancel) { "Cancel" }
         }
     }
 }

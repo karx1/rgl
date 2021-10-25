@@ -10,4 +10,7 @@ extern "C" {
 
     #[wasm_bindgen(js_namespace = localStorage, js_name = getItem)]
     pub fn get_item(key: &str) -> String;
+
+    #[wasm_bindgen(js_namespace = localStorage, js_name = removeItem)]
+    pub fn remove_item(key: &str);
 }
