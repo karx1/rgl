@@ -1,0 +1,23 @@
+# NoteRS
+
+[Live App](https://karx.xyz/rgl/concurrency/)
+
+## Running Locally
+1. Install dependencies
+
+    First, install `rust` from [the Rust website](https://www.rust-lang.org/). Then, install `trunk`:
+    ```bash
+    cargo install --locked trunk
+    ```
+    This project is only tested on rust `1.55.0` - if there's anyone who can test other versions, let me know!
+2. Build project
+    ```bash
+    cd /path/to/noters
+    trunk serve
+    ```
+3. Open in browser
+
+    [Check the supported browser list](https://rustwasm.github.io/docs/wasm-bindgen/reference/browser-support.html) and open https://localhost:8080 in one of the supported browsers.
+    
+
+<small>Created using [Sycamore}(https://crates.io/crates/sycamore) and Rust with WebAssembly</small>
