@@ -1,6 +1,7 @@
 function listLocalStorageKeys() {
     const arr = Object.keys(localStorage);
     arr.sort((a, b) => {
+        // We can safely assume that all the keys are numbers, because if they're not, something very wrong has happened
         const a_num = Number(a);
         const b_num = Number(b);
 

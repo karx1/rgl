@@ -18,8 +18,11 @@ impl DefaultViewProps {
 }
 
 fn truncate(s: String, max_chars: usize) -> String {
+    // Grab the index of the char at `max_chars`
     match s.char_indices().nth(max_chars) {
+        // None indicates that max_chars is higher than the length of the string. In this case, we can just return the string
         None => s,
+        // Some returns the index, so then we can return a string slice from the beginning to index and add `...`
         Some((idx, _)) => format!("{}...", &s[..idx]),
     }
 }
@@ -41,6 +44,7 @@ pub fn default_view(props: DefaultViewProps) -> Template<G> {
                     let trunced = truncate(note, 75);
 
                     let timestamp = format!("Created at {}", time_hr(res.parse::<u64>().unwrap()));
+                    // Create new Strings to fix ownership problems
                     let detail_res = (&res[..]).to_string();
                     let delete_res = (&res[..]).to_string();
 
@@ -159,9 +163,8 @@ pub fn edit_view(props: EditViewProps) -> Template<G> {
     let mode = props.mode;
     let selected = props.selected;
 
-    let default = local_storage::get_item(&*selected.get());
-
-    let value = Signal::new(default);
+    let default = local_storage::get_item(&*selected.get()); // get the previously saved value
+    let value = Signal::new(default); // and set it as the default state
 
     let save = cloned!((mode, selected, value) => move |_| {
         let timestamp = &*selected.get(); // deref to turn it into a String, then borrow again to make a &str
@@ -207,6 +210,7 @@ pub fn note_detail_view(props: NoteDetailViewProps) -> Template<G> {
     let mode = props.mode;
     let selected = props.selected;
 
+    // explicitly denote type so that it doesn't make a &String
     let timestamp_raw: &str = &*selected.get();
     let timestamp = format!(
         "Created at {}",

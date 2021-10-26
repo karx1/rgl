@@ -10,6 +10,7 @@ use sycamore::prelude::*;
 #[allow(unused_macros)]
 #[macro_export]
 macro_rules! log {
+    // read the macro section of the rust book for more info
     ($($t:tt)*) => (crate::console::log_raw(&format_args!($($t)*).to_string()))
 }
 
@@ -37,7 +38,7 @@ fn main() {
                         DefaultView(DefaultViewProps::new(cloned!((mode) => mode), cloned!((selected) => selected)))
                     },
                     AppMode::Create => template! {
-                       CreateView(CreateViewProps::new(cloned!((mode) => mode), cloned!((selected) => selected.handle())))
+                        CreateView(CreateViewProps::new(cloned!((mode) => mode), cloned!((selected) => selected.handle())))
                     },
                     AppMode::Edit => template! {
                         EditView(EditViewProps::new(cloned!((mode) => mode), cloned!((selected) => selected.handle())))
