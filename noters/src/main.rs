@@ -29,17 +29,6 @@ fn main() {
     let mode = Signal::new(AppMode::Default);
     let selected = Signal::new(String::new());
 
-    // Remove all keys that are not numbers (e.g. unix timestamps)
-    for key in local_storage::list_local_storage_keys().to_vec() {
-        if key.is_string() {
-            if let Some(res) = key.as_string() {
-                if let Err(_) = res.parse::<u64>() {
-                    local_storage::remove_item(&res);
-                }
-            }
-        }
-    }
-
     sycamore::render(|| {
         template! {
             h1(style="text-align: center") { "NoteRS" }
