@@ -27,6 +27,15 @@ fn truncate(s: String, max_chars: usize) -> String {
     }
 }
 
+macro_rules! skip_fail {
+    ($result:expr) => {
+        match $result {
+            Ok(val) => val,
+            Err(_) => continue,
+        }
+    };
+}
+
 #[component(DefaultView<G>)]
 pub fn default_view(props: DefaultViewProps) -> Template<G> {
     let mode = props.mode;
@@ -43,7 +52,8 @@ pub fn default_view(props: DefaultViewProps) -> Template<G> {
                     let note = local_storage::get_item(&res);
                     let trunced = truncate(note, 75);
 
-                    let timestamp = format!("Created at {}", time_hr(res.parse::<u64>().unwrap()));
+                    let timestamp =
+                        format!("Created at {}", time_hr(skip_fail!(res.parse::<u64>())));
                     // Create new Strings to fix ownership problems
                     let detail_res = (&res[..]).to_string();
                     let delete_res = (&res[..]).to_string();
