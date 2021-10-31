@@ -1,5 +1,8 @@
 use sycamore::prelude::*;
 
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
 fn main() {
     let inp = Signal::new(String::new());
     let err = Signal::new(false);
