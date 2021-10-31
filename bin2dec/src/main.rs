@@ -3,13 +3,13 @@ use sycamore::prelude::*;
 fn main() {
     let inp = Signal::new(String::new());
     let err = Signal::new(false);
-    let double = create_memo(cloned!((inp, err) => move || {
+    let decimal = create_memo(cloned!((inp, err) => move || {
         if *inp.get() == "" {
             return 0;
         }
-        if let Ok(parsed) = (*inp.get()).parse::<u64>() {
+        if let Ok(parsed) = u128::from_str_radix(&*inp.get(), 2) {
             err.set(false);
-            return parsed * 2;
+            return parsed;
         } else {
             err.set(true);
             return 0;
@@ -23,12 +23,15 @@ fn main() {
                 input(placeholder="Binary", bind:value=inp, style="text-align: center")
                 (if *err.get() {
                     template! {
-                        span(style="color: red") { "unable to convert" }
+                        span(style="color: red") { "Unable to convert to decimal" }
                     }
                 } else {
                     template! {}
                 })
-                div(class="card") { (double.get()) }
+                div(class="card") { (decimal.get()) }
+            }
+            div(class="footer") {
+                "Powered by Rust 1.56 and WASM"
             }
         }
     })
