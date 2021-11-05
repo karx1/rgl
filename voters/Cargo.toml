@@ -7,3 +7,10 @@ edition = "2021"
 
 [dependencies]
 sycamore = "0.6.3"
+wasm-bindgen-futures = "0.4.28"
+json = "0.12.4"
+
+[dependencies.surf]
+version = "2.3.2"
+default-features = false
+features = ["wasm-client"]
