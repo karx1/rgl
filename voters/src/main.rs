@@ -1,3 +1,11 @@
+use sycamore::prelude::*;
+
 fn main() {
-    println!("Hello, world!");
+    sycamore::render(|| {
+        template! {
+            div(class="wrapper") {
+                p { "Hello, world!" }
+            }
+        }
+    });
 }
