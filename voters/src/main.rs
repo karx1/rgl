@@ -42,7 +42,7 @@ fn main() {
                             None => ""
                         });
 
-                        builder.push(string);
+                        builder.push((string, i));
                     }
 
                     items.set(builder);
@@ -66,9 +66,9 @@ fn main() {
                     Keyed(KeyedProps {
                         iterable: items.handle(),
                         template: |x| template! {
-                            li {(x)}
+                            li {(x.0.clone())}
                         },
-                        key: |x| (*x).clone(),
+                        key: |x| (*x).1,
                     })
                 }
             }
