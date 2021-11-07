@@ -2,7 +2,7 @@ use sycamore::prelude::*;
 use wasm_bindgen_futures::spawn_local;
 
 fn main() {
-    let items = Signal::new(Vec::new());    
+    let items = Signal::new(Vec::new());
     let length = Signal::new(0u8);
     let error = Signal::new(String::new());
 
