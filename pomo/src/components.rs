@@ -1,16 +1,27 @@
 use crate::interval::{clear_interval, set_interval};
+use crate::AppMode;
 use sycamore::prelude::*;
 use wasm_bindgen::closure::Closure;
 
+#[derive(Debug, Clone)]
+pub struct Props {
+    pub mode: Signal<AppMode>,
+    pub preload: Signal<bool>,
+}
+
 #[component(WorkingView<G>)]
-pub fn working_view() -> Template<G> {
+pub fn working_view(props: Props) -> Template<G> {
     let time_left = Signal::new(1500);
     let id = Signal::new(0i32);
-    let paused = Signal::new(true);
+    let paused = Signal::new(!*props.preload.get());
 
     let cb = Closure::wrap(Box::new(cloned!((time_left, paused) => move || {
         if !*paused.get() {
             let time = *time_left.get();
+            if time == 0 {
+                props.preload.set(true);
+                props.mode.set(AppMode::Break);
+            }
             time_left.set(time - 1);
         }
     })) as Box<dyn Fn()>);
@@ -41,14 +52,18 @@ pub fn working_view() -> Template<G> {
 }
 
 #[component(BreakView<G>)]
-pub fn break_view() -> Template<G> {
+pub fn break_view(props: Props) -> Template<G> {
     let time_left = Signal::new(300);
     let id = Signal::new(0i32);
-    let paused = Signal::new(true);
+    let paused = Signal::new(!*props.preload.get());
 
     let cb = Closure::wrap(Box::new(cloned!((time_left, paused) => move || {
         if !*paused.get() {
             let time = *time_left.get();
+            if time == 0 {
+                props.preload.set(true);
+                props.mode.set(AppMode::Working);
+            }
             time_left.set(time - 1);
         }
     })) as Box<dyn Fn()>);
