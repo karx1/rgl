@@ -1,3 +1,9 @@
+use sycamore::prelude::*;
+
 fn main() {
-    println!("Hello, world!");
+    sycamore::render(|| template! {
+        div(class="wrapper") {
+            h1(style="text-align: center") { "Hello, World!" }
+        }
+    });
 }
