@@ -21,7 +21,7 @@ pub fn working_view() -> Template<G> {
     cb.forget();
 
     template! {
-        p {
+        p(class="countdown") {
             (format_time(*time_left.get()))
         }
     }
