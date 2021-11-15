@@ -6,10 +6,13 @@ use wasm_bindgen::closure::Closure;
 pub fn working_view() -> Template<G> {
     let time_left = Signal::new(1500);
     let id = Signal::new(0i32);
+    let paused = Signal::new(true);
 
-    let cb = Closure::wrap(Box::new(cloned!((time_left) => move || {
-        let time = *time_left.get();
-        time_left.set(time - 1);
+    let cb = Closure::wrap(Box::new(cloned!((time_left, paused) => move || {
+        if !*paused.get() {
+            let time = *time_left.get();
+            time_left.set(time - 1);
+        }
     })) as Box<dyn Fn()>);
 
     id.set(set_interval(&cb, 1_000));
@@ -18,11 +21,21 @@ pub fn working_view() -> Template<G> {
         clear_interval(*id.get());
     }));
 
+    let play = cloned!((paused) => move |_| paused.set(false));
+    let pause = cloned!((paused) => move |_| paused.set(true));
+    let reset = cloned!((paused, time_left) => move |_| {
+        paused.set(true);
+        time_left.set(1500);
+    });
+
     cb.forget();
 
     template! {
-        p(class="countdown") {
-            (format_time(*time_left.get()))
+        p(class="countdown") {(format_time(*time_left.get()))}
+        div(style="text-align: center") {
+            button(on:click=play) { "Play" }
+            button(on:click=pause) { "Pause" }
+            button(on:click=reset) { "Reset" }
         }
     }
 }
@@ -31,10 +44,13 @@ pub fn working_view() -> Template<G> {
 pub fn break_view() -> Template<G> {
     let time_left = Signal::new(300);
     let id = Signal::new(0i32);
+    let paused = Signal::new(true);
 
-    let cb = Closure::wrap(Box::new(cloned!((time_left) => move || {
-        let time = *time_left.get();
-        time_left.set(time - 1);
+    let cb = Closure::wrap(Box::new(cloned!((time_left, paused) => move || {
+        if !*paused.get() {
+            let time = *time_left.get();
+            time_left.set(time - 1);
+        }
     })) as Box<dyn Fn()>);
 
     id.set(set_interval(&cb, 1_000));
@@ -43,11 +59,21 @@ pub fn break_view() -> Template<G> {
         clear_interval(*id.get());
     }));
 
+    let play = cloned!((paused) => move |_| paused.set(false));
+    let pause = cloned!((paused) => move |_| paused.set(true));
+    let reset = cloned!((paused, time_left) => move |_| {
+        paused.set(true);
+        time_left.set(300);
+    });
+
     cb.forget();
 
     template! {
-        p(class="countdown") {
-            (format_time(*time_left.get()))
+        p(class="countdown") {(format_time(*time_left.get()))}
+        div(style="text-align: center") {
+            button(on:click=play) { "Play" }
+            button(on:click=pause) { "Pause" }
+            button(on:click=reset) { "Reset" }
         }
     }
 }
