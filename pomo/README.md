@@ -1,6 +1,6 @@
 # Pomo
 
-[Live App](https://karx.xyz/rgl/pomo/)
+[Live App](https://etc.karx.xyz/rgl/pomo/)
 
 ## Running Locally
 1. Install dependencies
