@@ -255,6 +255,7 @@ name = "typers"
 version = "0.1.0"
 dependencies = [
  "sycamore",
+ "wasm-bindgen",
 ]
 
 [[package]]
