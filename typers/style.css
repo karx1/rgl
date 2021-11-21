@@ -4,3 +4,11 @@
     width: 60%;
     padding: 10px;
 }
+
+.correct {
+    color: green;
+}
+
+.incorrect {
+    color: red;
+}
