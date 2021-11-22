@@ -22,6 +22,7 @@ fn main() {
             .chars()
             .collect::<Vec<char>>(),
     );
+    let initial = Signal::new(true);
 
     let cb = Closure::wrap(Box::new(cloned!((time_left) => move || {
         let time = *time_left.get();
@@ -59,6 +60,8 @@ fn main() {
 
             total_errors.set(t_error_count + c_error_count as u64);
 
+            error_count.set(0);
+
             value.set(String::new());
 
             reset();
@@ -68,12 +71,14 @@ fn main() {
     create_effect(cloned!((value, error_count) => move || {
         let value = (*value.get()).clone();
 
-        if value.len() > 0 {
+        if !*initial.get_untracked() { // prevent running on initial render
             let errors = process_text(value.clone());
             error_count.set(errors);
 
             try_update_quote(&value);
+
         }
+        initial.set(false);
     }));
 
     sycamore::render(|| {
