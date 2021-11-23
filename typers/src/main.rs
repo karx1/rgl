@@ -14,8 +14,22 @@ extern "C" {
     fn reload(event: Event);
 }
 
+#[derive(Clone, Copy, Debug)]
+struct Stats {
+    errors: u64,
+    cpm: f64,
+    wpm: f64,
+}
+
+#[derive(Clone, Debug)]
+struct Props {
+    mode: Signal<AppMode>,
+    stats: Signal<Stats>
+}
+
 #[component(TestComponent<G>)]
-fn test_component(mode: Signal<AppMode>) -> Template<G> {
+fn test_component(props: Props) -> Template<G> {
+    let mode = props.mode;
     let time_left = Signal::new(60u8);
     let value = Signal::new(String::new());
     let error_count = Signal::new(0usize);
@@ -116,35 +130,41 @@ fn test_component(mode: Signal<AppMode>) -> Template<G> {
         }
     }));
 
-    create_effect(cloned!((finished, mode) => move || {
+    create_effect(cloned!((finished, mode, total_errors, cpm, wpm) => move || {
         if *finished.get() {
+            let stats = Stats {
+                errors: *total_errors.get_untracked(),
+                cpm: *cpm.get_untracked(),
+                wpm: *wpm.get_untracked(),
+            };
+            props.stats.set(stats);
             mode.set(AppMode::Restart);
         }
     }));
 
     template! {
         div(class="text-align-center") {
-                div(class="inline card") {
-                    "Time Left"
-                    br {}
-                    (time_left.get())
-                }
-                div(class="inline incorrect card") {
-                    "Total Errors"
-                    br {}
-                    (total_errors.get())
-                }
-                div(class="inline card") {
-                    "CPM"
-                    br {}
-                    (((*cpm.get()).round() as u64))
-                }
-                div(class="inline card") {
-                    "WPM"
-                    br {}
-                    (((*wpm.get()).round() as u64))
-                }
+            div(class="inline card") {
+                "Time Left"
+                br {}
+                (time_left.get())
             }
+            div(class="inline incorrect card") {
+                "Total Errors"
+                br {}
+                (total_errors.get())
+            }
+            div(class="inline card") {
+                "CPM"
+                br {}
+                (((*cpm.get()).round() as u64))
+            }
+            div(class="inline card") {
+                "WPM"
+                br {}
+                (((*wpm.get()).round() as u64))
+            }
+        }
         div(id="quote") {
             Keyed(KeyedProps {
                 iterable: current_quote.handle(),
@@ -159,12 +179,33 @@ fn test_component(mode: Signal<AppMode>) -> Template<G> {
 }
 
 #[component(RestartView<G>)]
-fn restart_view(mode: Signal<AppMode>) -> Template<G> {
+fn restart_view(props: Props) -> Template<G> {
+    let mode = props.mode;
     let restart = cloned!((mode) => move |_| {
         mode.set(AppMode::Test);
     });
+    let stats = *props.stats.get();
+    let errors = stats.errors;
+    let cpm = stats.cpm as u64;
+    let wpm = stats.wpm as u64;
     template! {
         div(class="text-align-center") {
+            div(class="inline incorrect card") {
+                "Total Errors"
+                br {}
+                (errors)
+            }
+            div(class="inline card") {
+                "CPM"
+                br {}
+                (cpm)
+            }
+            div(class="inline card") {
+                "WPM"
+                br {}
+                (wpm)
+            }
+            br {}
             "Great job!"
             br
             button(on:click=restart) { "Click to restart" }
@@ -193,14 +234,15 @@ enum AppMode {
 
 fn main() {
     let mode = Signal::new(AppMode::Start);
+    let stats = Signal::new(Stats { errors: 0, cpm: 0f64, wpm: 0f64 });
     sycamore::render(|| {
         template! {
             h1(class="text-align-center") { "TypeRS" }
             div(class="wrapper") {
                 (match *mode.get() {
                     AppMode::Start => template! { StartScreen(cloned!((mode) => mode)) },
-                    AppMode::Test => template! { TestComponent(cloned!((mode) => mode)) },
-                    AppMode::Restart => template! { RestartView(cloned!((mode) => mode)) },
+                    AppMode::Test => template! { TestComponent(cloned!((mode, stats) => Props { mode, stats })) },
+                    AppMode::Restart => template! { RestartView(cloned!((mode, stats) => Props { mode, stats })) },
                 })
             }
         }
