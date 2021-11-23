@@ -14,7 +14,8 @@ extern "C" {
     fn reload(event: Event);
 }
 
-fn main() {
+#[component(TestComponent<G>)]
+fn test_component(mode: Signal<AppMode>) -> Template<G> {
     let time_left = Signal::new(60u8);
     let value = Signal::new(String::new());
     let error_count = Signal::new(0usize);
@@ -115,52 +116,91 @@ fn main() {
         }
     }));
 
+    create_effect(cloned!((finished, mode) => move || {
+        if *finished.get() {
+            mode.set(AppMode::Restart);
+        }
+    }));
+
+    template! {
+        div(class="text-align-center") {
+                div(class="inline card") {
+                    "Time Left"
+                    br {}
+                    (time_left.get())
+                }
+                div(class="inline incorrect card") {
+                    "Total Errors"
+                    br {}
+                    (total_errors.get())
+                }
+                div(class="inline card") {
+                    "CPM"
+                    br {}
+                    (((*cpm.get()).round() as u64))
+                }
+                div(class="inline card") {
+                    "WPM"
+                    br {}
+                    (((*wpm.get()).round() as u64))
+                }
+            }
+        div(id="quote") {
+            Keyed(KeyedProps {
+                iterable: current_quote.handle(),
+                template: |c| template! {
+                    span { (c) }
+                },
+                key: |c| *c
+            })
+            input(bind:value=value, class="text-align-center")
+        }
+    }
+}
+
+#[component(RestartView<G>)]
+fn restart_view(mode: Signal<AppMode>) -> Template<G> {
+    let restart = cloned!((mode) => move |_| {
+        mode.set(AppMode::Test);
+    });
+    template! {
+        div(class="text-align-center") {
+            "Great job!"
+            br
+            button(on:click=restart) { "Click to restart" }
+        }
+    }
+}
+
+#[component(StartScreen<G>)]
+fn start_screen(mode: Signal<AppMode>) -> Template<G> {
+    let start = cloned!((mode) => move |_| {
+        mode.set(AppMode::Test);
+    });
+    template! {
+        div(class="text-align-center") {
+            button(on:click=start) { "Start" }
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+enum AppMode {
+    Start,
+    Test,
+    Restart,
+}
+
+fn main() {
+    let mode = Signal::new(AppMode::Start);
     sycamore::render(|| {
         template! {
+            h1(class="text-align-center") { "TypeRS" }
             div(class="wrapper") {
-                div(class="text-align-center") {
-                        div(class="inline card") {
-                            "Time Left"
-                            br {}
-                            (time_left.get())
-                        }
-                        div(class="inline incorrect card") {
-                            "Total Errors"
-                            br {}
-                            (total_errors.get())
-                        }
-                        div(class="inline card") {
-                            "CPM"
-                            br {}
-                            (((*cpm.get()).round() as u64))
-                        }
-                        div(class="inline card") {
-                            "WPM"
-                            br {}
-                            (((*wpm.get()).round() as u64))
-                        }
-                }
-                (if !*finished.get() {
-                    cloned!((value) => template! {
-                        div(id="quote") {
-                            Keyed(KeyedProps {
-                                iterable: current_quote.handle(),
-                                template: |c| template! {
-                                    span { (c) }
-                                },
-                                key: |c| *c
-                            })
-                            input(bind:value=value, class="text-align-center")
-                        }
-                    })
-                } else {
-                    template! {
-                        div(class="text-align-center") {
-                            "Great job!"
-                            br
-                            button(on:click=reload) { "Click to restart" }
-                        }
-                    }
+                (match *mode.get() {
+                    AppMode::Start => template! { StartScreen(cloned!((mode) => mode)) },
+                    AppMode::Test => template! { TestComponent(cloned!((mode) => mode)) },
+                    AppMode::Restart => template! { RestartView(cloned!((mode) => mode)) },
                 })
             }
         }
