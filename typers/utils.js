@@ -33,3 +33,7 @@ function reset() {
         char.classList.remove('incorrect');
     })
 }
+
+function reload(event) {
+    window.location.reload();
+}

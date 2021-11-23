@@ -1,7 +1,7 @@
 mod interval;
 
-use crate::interval::{set_interval, clear_interval};
-use sycamore::prelude::*;
+use crate::interval::{clear_interval, set_interval};
+use sycamore::{prelude::*, rt::Event};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -10,6 +10,8 @@ extern "C" {
     fn process_text(value: String) -> usize;
     #[wasm_bindgen]
     fn reset();
+    #[wasm_bindgen]
+    fn reload(event: Event);
 }
 
 fn main() {
@@ -140,7 +142,7 @@ fn main() {
                         div(class="text-align-center") {
                             "Great job!"
                             br
-                            button { "Click to restart" }
+                            button(on:click=reload) { "Click to restart" }
                         }
                     }
                 })
