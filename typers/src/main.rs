@@ -1,6 +1,6 @@
 mod interval;
 
-use crate::interval::set_interval;
+use crate::interval::{set_interval, clear_interval};
 use sycamore::prelude::*;
 use wasm_bindgen::prelude::*;
 
@@ -26,6 +26,8 @@ fn main() {
     let characters_typed = Signal::new(0u64);
     let cpm = Signal::new(0f64);
     let wpm = Signal::new(0f64);
+    let finished = Signal::new(false);
+    let id = Signal::new(0i32);
 
     let cb = Closure::wrap(Box::new(cloned!((time_left) => move || {
         let time = *time_left.get();
@@ -34,7 +36,7 @@ fn main() {
         }
     })) as Box<dyn Fn()>);
 
-    set_interval(&cb, 1_000);
+    id.set(set_interval(&cb, 1_000));
 
     cb.forget(); // This leaks memory but without it the closure is dropped before it can be called by the interval
 
@@ -103,6 +105,14 @@ fn main() {
         }
     }));
 
+    create_effect(cloned!((id, time_left, finished) => move || {
+        let time = *time_left.get();
+        if time == 0 {
+            clear_interval(*id.get_untracked()); // id should never change anyway, but in case it does it's best not to track it
+            finished.set(true);
+        }
+    }));
+
     sycamore::render(|| {
         template! {
             div(class="wrapper") {
@@ -112,16 +122,28 @@ fn main() {
                 p { (characters_typed.get()) }
                 p { (cpm.get()) }
                 p { (wpm.get()) }
-                div(id="quote") {
-                    Keyed(KeyedProps {
-                        iterable: current_quote.handle(),
-                        template: |c| template! {
-                            span { (c) }
-                        },
-                        key: |c| *c
+                (if !*finished.get() {
+                    cloned!((value) => template! {
+                        div(id="quote") {
+                            Keyed(KeyedProps {
+                                iterable: current_quote.handle(),
+                                template: |c| template! {
+                                    span { (c) }
+                                },
+                                key: |c| *c
+                            })
+                            input(bind:value=value, class="text-align-center")
+                        }
                     })
-                }
-                input(bind:value=value)
+                } else {
+                    template! {
+                        div(class="text-align-center") {
+                            "Great job!"
+                            br
+                            button { "Click to restart" }
+                        }
+                    }
+                })
             }
         }
     });

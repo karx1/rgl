@@ -12,3 +12,11 @@
 .incorrect {
     color: red;
 }
+
+#quote {
+    text-align: center;
+}
+
+.text-align-center {
+    text-align: center;
+}
