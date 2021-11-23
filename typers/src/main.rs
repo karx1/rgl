@@ -118,12 +118,28 @@ fn main() {
     sycamore::render(|| {
         template! {
             div(class="wrapper") {
-                p { (time_left.get()) }
-                p { (total_errors.get()) }
-                p { (error_count.get()) }
-                p { (characters_typed.get()) }
-                p { (cpm.get()) }
-                p { (wpm.get()) }
+                div(class="text-align-center") {
+                        div(class="inline card") {
+                            "Time Left"
+                            br {}
+                            (time_left.get())
+                        }
+                        div(class="inline incorrect card") {
+                            "Total Errors"
+                            br {}
+                            (total_errors.get())
+                        }
+                        div(class="inline card") {
+                            "CPM"
+                            br {}
+                            (((*cpm.get()).round() as u64))
+                        }
+                        div(class="inline card") {
+                            "WPM"
+                            br {}
+                            (((*wpm.get()).round() as u64))
+                        }
+                }
                 (if !*finished.get() {
                     cloned!((value) => template! {
                         div(id="quote") {

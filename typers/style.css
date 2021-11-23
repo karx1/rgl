@@ -20,3 +20,20 @@
 .text-align-center {
     text-align: center;
 }
+
+.card {
+    border: 0.1rem solid #d1d1d1;
+    border-radius: .4rem;
+    padding: .6rem 1.0rem .7rem;
+    margin-bottom: 1.5rem;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+.inline {
+    display: inline-block;
+}
+
+.card + .card {
+    margin-left: .75rem;
+}
