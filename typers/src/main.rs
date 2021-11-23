@@ -23,6 +23,9 @@ fn main() {
             .collect::<Vec<char>>(),
     );
     let initial = Signal::new(true);
+    let characters_typed = Signal::new(0u64);
+    let cpm = Signal::new(0f64);
+    let wpm = Signal::new(0f64);
 
     let cb = Closure::wrap(Box::new(cloned!((time_left) => move || {
         let time = *time_left.get();
@@ -68,10 +71,12 @@ fn main() {
         }
     });
 
-    create_effect(cloned!((value, error_count) => move || {
+    create_effect(cloned!((value, error_count, characters_typed) => move || {
         let value = (*value.get()).clone();
 
         if !*initial.get_untracked() { // prevent running on initial render
+            let chars = *characters_typed.get_untracked();
+            characters_typed.set(chars + 1);
             let errors = process_text(value.clone());
             error_count.set(errors);
 
@@ -81,12 +86,32 @@ fn main() {
         initial.set(false);
     }));
 
+    create_effect(cloned!((characters_typed, cpm, wpm, time_left) => move || {
+        let time_elapsed = 60 - *time_left.get();
+        let chars = *characters_typed.get();
+        if time_elapsed > 0 {
+            {
+                let result = chars as f64 / time_elapsed as f64;
+                cpm.set(result * 60f64);
+            };
+
+            {
+                let mut result = chars as f64 / 5f64;
+                result /= time_elapsed as f64;
+                wpm.set(result * 60f64);
+            }
+        }
+    }));
+
     sycamore::render(|| {
         template! {
             div(class="wrapper") {
                 p { (time_left.get()) }
                 p { (total_errors.get()) }
                 p { (error_count.get()) }
+                p { (characters_typed.get()) }
+                p { (cpm.get()) }
+                p { (wpm.get()) }
                 div(id="quote") {
                     Keyed(KeyedProps {
                         iterable: current_quote.handle(),
