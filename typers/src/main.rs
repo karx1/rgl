@@ -24,7 +24,7 @@ struct Stats {
 #[derive(Clone, Debug)]
 struct Props {
     mode: Signal<AppMode>,
-    stats: Signal<Stats>
+    stats: Signal<Stats>,
 }
 
 #[component(TestComponent<G>)]
@@ -122,25 +122,33 @@ fn test_component(props: Props) -> Template<G> {
         }
     }));
 
-    create_effect(cloned!((id, time_left, finished) => move || {
-        let time = *time_left.get();
-        if time == 0 {
-            clear_interval(*id.get_untracked()); // id should never change anyway, but in case it does it's best not to track it
-            finished.set(true);
-        }
-    }));
+    create_effect(
+        cloned!((id, time_left, finished, total_errors, error_count) => move || {
+            let time = *time_left.get();
+            if time == 0 {
+                clear_interval(*id.get_untracked()); // id should never change anyway, but in case it does it's best not to track it
+                let t_error_count = *total_errors.get_untracked();
+                let c_error_count = *error_count.get_untracked();
 
-    create_effect(cloned!((finished, mode, total_errors, cpm, wpm) => move || {
-        if *finished.get() {
-            let stats = Stats {
-                errors: *total_errors.get_untracked(),
-                cpm: *cpm.get_untracked(),
-                wpm: *wpm.get_untracked(),
-            };
-            props.stats.set(stats);
-            mode.set(AppMode::Restart);
-        }
-    }));
+                total_errors.set(t_error_count + c_error_count as u64);
+                finished.set(true);
+            }
+        }),
+    );
+
+    create_effect(
+        cloned!((finished, mode, total_errors, cpm, wpm) => move || {
+            if *finished.get() {
+                let stats = Stats {
+                    errors: *total_errors.get_untracked(),
+                    cpm: *cpm.get_untracked(),
+                    wpm: *wpm.get_untracked(),
+                };
+                props.stats.set(stats);
+                mode.set(AppMode::Restart);
+            }
+        }),
+    );
 
     template! {
         div(class="text-align-center") {
@@ -234,7 +242,11 @@ enum AppMode {
 
 fn main() {
     let mode = Signal::new(AppMode::Start);
-    let stats = Signal::new(Stats { errors: 0, cpm: 0f64, wpm: 0f64 });
+    let stats = Signal::new(Stats {
+        errors: 0,
+        cpm: 0f64,
+        wpm: 0f64,
+    });
     sycamore::render(|| {
         template! {
             h1(class="text-align-center") { "TypeRS" }
