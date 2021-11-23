@@ -257,6 +257,9 @@ fn main() {
                     AppMode::Restart => template! { RestartView(cloned!((mode, stats) => Props { mode, stats })) },
                 })
             }
+            div(class="footer") {
+                "Powered by Rust 1.56 and WASM"
+            }
         }
     });
 }
