@@ -35,11 +35,13 @@ macro_rules! wasm_import {
     }
 }
 
-#[wasm_bindgen]
-extern "C" {
-    pub type MouseEvent;
-    pub type DOMRect;
-    pub type HTMLCanvasElement;
+macro_rules! wasm_import_type {
+    ($name:ident) => {
+        #[wasm_bindgen]
+        extern "C" {
+            pub type $name;
+        }
+    }
 }
 
 macro_rules! read_js_value {
@@ -48,13 +50,17 @@ macro_rules! read_js_value {
     };
 }
 
+wasm_import_type!(MouseEvent);
+wasm_import_type!(DOMRect);
+wasm_import_type!(HTMLCanvasElement);
+
 wasm_import!(test(s: &str));
 wasm_import!(addEventListener(
     name: &str,
     cb: &Closure<dyn Fn(MouseEvent)>
 ));
 wasm_import!(getClientRect() > DOMRect);
-wasm_import!(draw(x: f64, y: f64));
+wasm_import!(draw(x0: f64, y0: f64, x1: f64, y1: f64));
 wasm_import!(getWidth() > f64);
 wasm_import!(getHeight() > f64);
 wasm_import!(clear());
@@ -117,6 +123,8 @@ fn main() {
     panic::set_hook(Box::new(console_error_panic_hook::hook));
 
     let clicked = Signal::new(false);
+    let prevPos = Signal::new(Pos { x: 0f64, y: 0f64 });
+
     let cb0 = Closure::wrap(Box::new(cloned!((clicked) => move |e: MouseEvent| {
         let val = read_js_value!(e.obj, "buttons").unwrap().as_f64().unwrap() as u8;
 
@@ -124,10 +132,12 @@ fn main() {
     })) as Box<dyn Fn(MouseEvent)>);
 
     let cb1 = Closure::wrap(Box::new(cloned!((clicked) => move |e: MouseEvent| {
+        let prev = *prevPos.get();
+        let pos = get_mouse_pos(getClientRect(), e);
         if *clicked.get() {
-            let pos = get_mouse_pos(getClientRect(), e);
-            draw(pos.x, pos.y);
+            draw(prev.x, prev.y, pos.x, pos.y);
         }
+        prevPos.set(pos);
     })) as Box<dyn Fn(MouseEvent)>);
 
     let cb2 = Closure::wrap(Box::new(cloned!((clicked) => move |_| {
@@ -148,6 +158,14 @@ fn main() {
                 h1(class="text-align-center") { "DrawRS" }
                 div(class="text-align-center") {
                     button(on:click=|_| clear()) { "Clear" }
+                    br
+                    button(class="color-button", id="red")
+                    button(class="color-button", id="orange")
+                    button(class="color-button", id="yellow")
+                    button(class="color-button", id="green")
+                    button(class="color-button", id="blue")
+                    button(class="color-button", id="indigo")
+                    button(class="color-button", id="red")
                 }
                 canvas(id="canvas")
             }

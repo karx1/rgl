@@ -14,11 +14,16 @@ function getClientRect() {
     return getCanvas().getBoundingClientRect();
 }
 
-function draw(x, y) {
-    const context = getContext();
+function draw(x0, y0, x1, y1) {
+    const ctx = getContext();
 
-    context.fillStyle = "#000000"; // TODO: Add ability to set color
-    context.fillRect(Number(x), Number(y), 4, 4);
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+    ctx.strokeStyle = "#000000"; // TODO: Add ability to set color
+    ctx.lineWidth = 4; // TODO: Add ability to set width
+    ctx.stroke();
+    ctx.closePath();
 }
 
 function getWidth() {
