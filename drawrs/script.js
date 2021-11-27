@@ -28,3 +28,18 @@ function getWidth() {
 function getHeight() {
     return getCanvas().height;
 }
+
+function clear() {
+    const context = getContext();
+    const canvas = context.canvas;
+
+    // Store the current transformation
+    context.save();
+
+    // Set a default transformation temporarily
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Restore saved transformation
+    context.restore();
+}

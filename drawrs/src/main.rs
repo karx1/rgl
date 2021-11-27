@@ -57,6 +57,7 @@ wasm_import!(getClientRect() > DOMRect);
 wasm_import!(draw(x: f64, y: f64));
 wasm_import!(getWidth() > f64);
 wasm_import!(getHeight() > f64);
+wasm_import!(clear());
 
 #[derive(Clone, Copy, Debug)]
 struct Rect {
@@ -144,6 +145,10 @@ fn main() {
     sycamore::render(|| {
         template! {
             div(class="wrapper") {
+                h1(class="text-align-center") { "DrawRS" }
+                div(class="text-align-center") {
+                    button(on:click=|_| clear()) { "Clear" }
+                }
                 canvas(id="canvas")
             }
         }
