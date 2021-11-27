@@ -18,3 +18,56 @@
 .text-align-center {
     text-align: center;
 }
+
+.color-button {
+    border: 0.1rem solid black;
+    border-radius: .4rem;
+    padding: 0 3.0rem;
+    display: inline-block;
+    height: 3.8rem;
+}
+
+.color-button + .color-button {
+    margin-left: 10px;
+}
+
+#red {
+    background-color: red;
+}
+
+#orange {
+    background-color: orange;
+}
+
+#yellow {
+    background-color: yellow;
+}
+
+#green {
+    background-color: green;
+}
+
+#blue {
+    background-color: blue;
+}
+
+#indigo {
+    background-color: indigo;
+}
+
+#violet {
+    background-color: violet;
+}
+
+#brown {
+    background-color: brown;
+}
+
+#black {
+    background-color: black;
+}
+
+#white {
+    background-color: white;
+}
+

@@ -60,7 +60,7 @@ wasm_import!(addEventListener(
     cb: &Closure<dyn Fn(MouseEvent)>
 ));
 wasm_import!(getClientRect() > DOMRect);
-wasm_import!(draw(x0: f64, y0: f64, x1: f64, y1: f64));
+wasm_import!(draw(x0: f64, y0: f64, x1: f64, y1: f64, color: &str));
 wasm_import!(getWidth() > f64);
 wasm_import!(getHeight() > f64);
 wasm_import!(clear());
@@ -124,6 +124,7 @@ fn main() {
 
     let clicked = Signal::new(false);
     let prevPos = Signal::new(Pos { x: 0f64, y: 0f64 });
+    let color = Signal::new(String::from("black"));
 
     let cb0 = Closure::wrap(Box::new(cloned!((clicked) => move |e: MouseEvent| {
         let val = read_js_value!(e.obj, "buttons").unwrap().as_f64().unwrap() as u8;
@@ -131,11 +132,11 @@ fn main() {
         clicked.set(val == 1);
     })) as Box<dyn Fn(MouseEvent)>);
 
-    let cb1 = Closure::wrap(Box::new(cloned!((clicked) => move |e: MouseEvent| {
+    let cb1 = Closure::wrap(Box::new(cloned!((clicked, color) => move |e: MouseEvent| {
         let prev = *prevPos.get();
         let pos = get_mouse_pos(getClientRect(), e);
         if *clicked.get() {
-            draw(prev.x, prev.y, pos.x, pos.y);
+            draw(prev.x, prev.y, pos.x, pos.y, &*color.get());
         }
         prevPos.set(pos);
     })) as Box<dyn Fn(MouseEvent)>);
@@ -152,20 +153,30 @@ fn main() {
     cb1.forget();
     cb2.forget();
 
-    sycamore::render(|| {
+    let click_color_div = cloned!((color) => move |e: web_sys::Event| {
+        let id = read_js_value!(e.target().unwrap(), "id").unwrap().as_string().unwrap();
+
+        color.set(id);
+    });
+
+    sycamore::render(
+        || {
         template! {
             div(class="wrapper") {
                 h1(class="text-align-center") { "DrawRS" }
                 div(class="text-align-center") {
                     button(on:click=|_| clear()) { "Clear" }
                     br
-                    button(class="color-button", id="red")
-                    button(class="color-button", id="orange")
-                    button(class="color-button", id="yellow")
-                    button(class="color-button", id="green")
-                    button(class="color-button", id="blue")
-                    button(class="color-button", id="indigo")
-                    button(class="color-button", id="red")
+                    div(on:click=click_color_div.clone(), class="color-button", id="red")
+                    div(on:click=click_color_div.clone(), class="color-button", id="orange")
+                    div(on:click=click_color_div.clone(), class="color-button", id="yellow")
+                    div(on:click=click_color_div.clone(), class="color-button", id="green")
+                    div(on:click=click_color_div.clone(), class="color-button", id="blue")
+                    div(on:click=click_color_div.clone(), class="color-button", id="indigo")
+                    div(on:click=click_color_div.clone(), class="color-button", id="violet")
+                    div(on:click=click_color_div.clone(), class="color-button", id="brown")
+                    div(on:click=click_color_div.clone(), class="color-button", id="black")
+                    div(on:click=click_color_div.clone(), class="color-button", id="white")
                 }
                 canvas(id="canvas")
             }

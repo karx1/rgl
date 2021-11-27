@@ -14,13 +14,13 @@ function getClientRect() {
     return getCanvas().getBoundingClientRect();
 }
 
-function draw(x0, y0, x1, y1) {
+function draw(x0, y0, x1, y1, color) {
     const ctx = getContext();
 
     ctx.beginPath();
     ctx.moveTo(x0, y0);
     ctx.lineTo(x1, y1);
-    ctx.strokeStyle = "#000000"; // TODO: Add ability to set color
+    ctx.strokeStyle = color;
     ctx.lineWidth = 4; // TODO: Add ability to set width
     ctx.stroke();
     ctx.closePath();

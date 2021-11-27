@@ -49,6 +49,7 @@ dependencies = [
  "js-sys",
  "sycamore",
  "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]
