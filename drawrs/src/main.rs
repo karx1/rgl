@@ -41,7 +41,7 @@ macro_rules! wasm_import_type {
         extern "C" {
             pub type $name;
         }
-    }
+    };
 }
 
 macro_rules! read_js_value {
@@ -60,7 +60,14 @@ wasm_import!(addEventListener(
     cb: &Closure<dyn Fn(MouseEvent)>
 ));
 wasm_import!(getClientRect() > DOMRect);
-wasm_import!(draw(x0: f64, y0: f64, x1: f64, y1: f64, color: &str));
+wasm_import!(draw(
+    x0: f64,
+    y0: f64,
+    x1: f64,
+    y1: f64,
+    color: &str,
+    width: u8
+));
 wasm_import!(getWidth() > f64);
 wasm_import!(getHeight() > f64);
 wasm_import!(clear());
@@ -125,6 +132,7 @@ fn main() {
     let clicked = Signal::new(false);
     let prevPos = Signal::new(Pos { x: 0f64, y: 0f64 });
     let color = Signal::new(String::from("black"));
+    let size = Signal::new(String::from("small"));
 
     let cb0 = Closure::wrap(Box::new(cloned!((clicked) => move |e: MouseEvent| {
         let val = read_js_value!(e.obj, "buttons").unwrap().as_f64().unwrap() as u8;
@@ -132,14 +140,22 @@ fn main() {
         clicked.set(val == 1);
     })) as Box<dyn Fn(MouseEvent)>);
 
-    let cb1 = Closure::wrap(Box::new(cloned!((clicked, color) => move |e: MouseEvent| {
-        let prev = *prevPos.get();
-        let pos = get_mouse_pos(getClientRect(), e);
-        if *clicked.get() {
-            draw(prev.x, prev.y, pos.x, pos.y, &*color.get());
-        }
-        prevPos.set(pos);
-    })) as Box<dyn Fn(MouseEvent)>);
+    let cb1 = Closure::wrap(
+        Box::new(cloned!((clicked, color, size) => move |e: MouseEvent| {
+            let prev = *prevPos.get();
+            let pos = get_mouse_pos(getClientRect(), e);
+            if *clicked.get() {
+                let width = match &**size.get() {
+                    "small" => 4,
+                    "med" => 8,
+                    "large" => 16,
+                    _ => 4, // Set default to 4 just in case
+                };
+                draw(prev.x, prev.y, pos.x, pos.y, &*color.get(), width);
+            }
+            prevPos.set(pos);
+        })) as Box<dyn Fn(MouseEvent)>,
+    );
 
     let cb2 = Closure::wrap(Box::new(cloned!((clicked) => move |_| {
         clicked.set(false);
@@ -159,13 +175,22 @@ fn main() {
         color.set(id);
     });
 
-    sycamore::render(
-        || {
+    let click_size_button = cloned!((size) => move |e: web_sys::Event| {
+        let id = read_js_value!(e.target().unwrap(), "id").unwrap().as_string().unwrap();
+
+        size.set(id);
+    });
+
+    sycamore::render(|| {
         template! {
             div(class="wrapper") {
                 h1(class="text-align-center") { "DrawRS" }
                 div(class="text-align-center") {
                     button(on:click=|_| clear()) { "Clear" }
+                    br
+                    button(class="size-button", id="small", on:click=click_size_button.clone()) { "Small" }
+                    button(class="size-button", id="med", on:click=click_size_button.clone()) { "Medium" }
+                    button(class="size-button", id="large", on:click=click_size_button.clone()) { "Large" }
                     br
                     div(on:click=click_color_div.clone(), class="color-button", id="red")
                     div(on:click=click_color_div.clone(), class="color-button", id="orange")
