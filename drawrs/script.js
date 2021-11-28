@@ -48,3 +48,12 @@ function clear() {
     // Restore saved transformation
     context.restore();
 }
+
+function updateDownload() {
+    const data = getCanvas().toDataURL();
+
+    const downloadButton = document.getElementById("download");
+
+    downloadButton.setAttribute("href", data);
+    downloadButton.setAttribute("download", "out.png");
+}

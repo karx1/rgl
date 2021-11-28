@@ -71,6 +71,7 @@ wasm_import!(draw(
 wasm_import!(getWidth() > f64);
 wasm_import!(getHeight() > f64);
 wasm_import!(clear());
+wasm_import!(updateDownload());
 
 #[derive(Clone, Copy, Debug)]
 struct Rect {
@@ -152,6 +153,7 @@ fn main() {
                     _ => 4, // Set default to 4 just in case
                 };
                 draw(prev.x, prev.y, pos.x, pos.y, &*color.get(), width);
+                updateDownload();
             }
             prevPos.set(pos);
         })) as Box<dyn Fn(MouseEvent)>,
@@ -181,12 +183,18 @@ fn main() {
         size.set(id);
     });
 
+    let click_clear_button = |_| {
+        clear();
+        updateDownload();
+    };
+
     sycamore::render(|| {
         template! {
             div(class="wrapper") {
                 h1(class="text-align-center") { "DrawRS" }
                 div(class="text-align-center") {
-                    button(on:click=|_| clear()) { "Clear" }
+                    a(id="download", class="button") { "Save" }
+                    button(on:click=click_clear_button, id="clear") { "Clear" }
                     br
                     button(class="size-button", id="small", on:click=click_size_button.clone()) { "Small" }
                     button(class="size-button", id="med", on:click=click_size_button.clone()) { "Medium" }
