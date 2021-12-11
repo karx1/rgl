@@ -332,6 +332,9 @@ fn main() {
                     AppMode::Startscreen => view! { StartScreen(Props { mode: cloned!(mode => mode), errors: cloned!(errors => errors), time_elapsed: cloned!(time_elapsed => time_elapsed) }) }
                 })
             }
+            div(class="footer") {
+                "Powered by Rust 1.56 and WASM"
+            }
         }
     });
 }
