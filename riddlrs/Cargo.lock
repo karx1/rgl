@@ -189,6 +189,7 @@ dependencies = [
 name = "riddlrs"
 version = "0.1.0"
 dependencies = [
+ "indexmap",
  "sycamore",
  "wasm-bindgen",
 ]

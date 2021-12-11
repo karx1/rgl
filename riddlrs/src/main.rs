@@ -1,10 +1,10 @@
 use sycamore::prelude::*;
-use std::collections::HashMap;
+use indexmap::IndexMap;
 use wasm_bindgen::prelude::*;
 
-macro_rules! hashmap {
+macro_rules! indexmap {
     ($($key:expr => $value:expr),*) => {{
-        let mut map = HashMap::new();
+        let mut map = IndexMap::new();
 
         $(
             map.insert($key, $value);            
@@ -49,7 +49,7 @@ macro_rules! wasm_import {
 struct Question {
     prompt: &'static str,
     answer: char,
-    choices: HashMap<char, &'static str>
+    choices: IndexMap<char, &'static str>
 }
 
 macro_rules! create_question {
@@ -65,15 +65,41 @@ macro_rules! create_question {
 wasm_import!(log(s: String));
 
 fn main() {
-    let question = create_question!("Which of these fruits contains potassium?", 'B',
-        hashmap! {
+    let questions = [create_question!("Which of these fruits contains potassium?", 'B',
+        indexmap! {
             'A' => "apple",
             'B' => "banana",
             'C' => "cherry",
             'D' => "dragonfruit"
         }
-    );
-    log(format!("{:#?}", question));
+    ),
+    create_question!("The moon's light actually comes from the sun", 'A', indexmap! {
+        'A' => "True",
+        'B' => "False"
+    }),
+    create_question!("Which of these countries is not considered a kingdom?", 'C', indexmap! {
+        'A' => "Belgium",
+        'B' => "Denmark",
+        'C' => "Monaco",
+        'D' => "Sweden"
+    }),
+    create_question!("Force is measured in which unit?", 'B', indexmap! {
+        'A' => "Kilograms",
+        'B' => "Newtons",
+        'C' => "Joules"
+    }),
+    create_question!("What does a vulcanologist study?", 'A', indexmap! {
+        'A' => "Volcanoes",
+        'B' => "Plants",
+        'C' => "Constellations"
+    }),
+    create_question!("Energy is measured in which unit?", 'C', indexmap! {
+        'A' => "Kilograms",
+        'B' => "Newtons",
+        'C' => "Joules"
+    }),
+    ];
+    log(format!("{:#?}", questions[0]));
     sycamore::render(|| template! {
         div(class="wrapper") {
             h1(class="text-align-center") { "RiddlRS" }
