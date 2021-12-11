@@ -26,3 +26,7 @@
 .inline {
     display: inline-block;
 }
+
+.card + .card {
+    margin-left: .75rem;
+}

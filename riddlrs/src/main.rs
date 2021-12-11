@@ -217,18 +217,39 @@ fn end_game_component(props: Props) -> View<G> {
     let mode = props.mode;
     let errors = props.errors;
 
+    let (failed, grade) = cloned!(errors => {
+        let num_errors = (*errors.get()) as f64;
+
+        let mut percentage = num_errors / 6f64;
+        percentage *= 100f64;
+
+        (percentage > 70f64, format!("{:.2}%", 100f64 - percentage))
+    });
+
     let restart = cloned!((mode, errors) => move |_| {
         errors.set(0);
         mode.set(AppMode::Quiz);
     });
 
     view! {
-        p(class="text-align-center") { "Game over! Here's how you did:" }
+        (if failed {
+            view! {
+                p(class="text-align-center") { "Sorry, you failed. Better luck next time! Here's how you did:" }
+            }
+        } else {
+            view! {
+                p(class="text-align-center") { "Great job, you passed! Here's how you did:" }
+            }
+        })
         br
         div(class="text-align-center") {
             div(class="card text-align-center inline", style="color: red") {
                 p {"Errors:"}
                 p { (errors.get()) }
+            }
+            div(class="card text-align-center inline") {
+                p {"Grade:"}
+                p { (grade) }
             }
             br
             button(on:click=restart) { "Restart" }
