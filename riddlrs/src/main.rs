@@ -160,7 +160,9 @@ fn main() {
     let answer_question = cloned!((index, questions) => move |e: Event| {
         let answer = questions[*index.get()].answer;
         let id = read_js_value!(e.target().unwrap(), "id").unwrap().as_string().unwrap().chars().collect::<Vec<char>>()[0];
-        log(format!("{}", id == answer));
+        if answer == id {
+            index.set(*index.get() + 1);
+        }
     });
 
     sycamore::render(cloned!(answer_question => || view! {
@@ -174,7 +176,7 @@ fn main() {
                         template: move |(c, s)| view! {
                             button(class="fw", id=c, on:click=answer_question.clone()) { (c)") "(s) }
                         },
-                        key: |(c, _)| *c
+                        key: |(_, s)| *s
                     })
                 }
             }
