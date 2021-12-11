@@ -15,6 +15,7 @@ struct Question {
 
 #[derive(Clone, Debug)]
 enum AppMode {
+    Startscreen,
     Quiz,
     Endgame,
 }
@@ -255,6 +256,7 @@ fn end_game_component(props: Props) -> View<G> {
 
     let restart = cloned!((mode, errors) => move |_| {
         errors.set(0);
+        time_elapsed.set(0);
         mode.set(AppMode::Quiz);
     });
 
@@ -288,6 +290,21 @@ fn end_game_component(props: Props) -> View<G> {
     }
 }
 
+#[component(StartScreen<G>)]
+fn start_screen_component(props: Props) -> View<G> {
+    let mode = props.mode;
+
+    let start_quiz = cloned!(mode => move |_| {
+        mode.set(AppMode::Quiz);
+    });
+
+    view! {
+        div(class="text-align-center") {
+            button(on:click=start_quiz) { "Start Quiz" }
+        }
+    }
+}
+
 fn add_leading_zeroes(num: usize) -> String {
     if num < 10 {
         return format!("0{}", num);
@@ -297,7 +314,7 @@ fn add_leading_zeroes(num: usize) -> String {
 
 fn main() {
     panic::set_hook(Box::new(console_error_panic_hook::hook));
-    let mode = Signal::new(AppMode::Endgame);
+    let mode = Signal::new(AppMode::Startscreen);
     let errors = Signal::new(0usize);
     let time_elapsed = Signal::new(0usize);
 
@@ -311,7 +328,8 @@ fn main() {
                 h1(class="text-align-center") { "RiddlRS" }
                 (match *mode.get() {
                     AppMode::Quiz => view! { QuizComponent(Props { mode: cloned!(mode => mode), errors: cloned!(errors => errors), time_elapsed: cloned!(time_elapsed => time_elapsed) }) },
-                    _ => view! { EndGameComponent(Props { mode: cloned!(mode => mode), errors: cloned!(errors => errors), time_elapsed: cloned!(time_elapsed => time_elapsed) }) }
+                    AppMode::Endgame => view! { EndGameComponent(Props { mode: cloned!(mode => mode), errors: cloned!(errors => errors), time_elapsed: cloned!(time_elapsed => time_elapsed) }) },
+                    AppMode::Startscreen => view! { StartScreen(Props { mode: cloned!(mode => mode), errors: cloned!(errors => errors), time_elapsed: cloned!(time_elapsed => time_elapsed) }) }
                 })
             }
         }
