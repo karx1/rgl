@@ -16,13 +16,13 @@ struct Question {
 #[derive(Clone, Debug)]
 enum AppMode {
     Quiz,
-    Endgame
+    Endgame,
 }
 
 #[derive(Clone, Debug)]
-struct QuizComponentProps {
+struct Props {
     mode: Signal<AppMode>,
-    errors: Signal<usize>
+    errors: Signal<usize>,
 }
 
 macro_rules! indexmap {
@@ -89,8 +89,6 @@ macro_rules! read_js_value {
     };
 }
 
-
-
 macro_rules! create_question {
     ($prompt:expr, $answer:expr, $choices:expr) => {
         Question {
@@ -104,7 +102,7 @@ macro_rules! create_question {
 wasm_import!(log(s: String));
 
 #[component(QuizComponent<G>)]
-fn quiz_component(props: QuizComponentProps) -> View<G> {
+fn quiz_component(props: Props) -> View<G> {
     let questions = [
         create_question!(
             "Which of these fruits contains potassium?",
@@ -172,13 +170,19 @@ fn quiz_component(props: QuizComponentProps) -> View<G> {
 
     let correct = Signal::new(true);
     let errors = props.errors;
+    let mode = props.mode;
 
     let answer_question = cloned!((index, questions, correct, errors) => move |e: Event| {
         let answer = questions[*index.get()].answer;
         let id = read_js_value!(e.target().unwrap(), "id").unwrap().as_string().unwrap().chars().collect::<Vec<char>>()[0];
         if answer == id {
-            index.set(*index.get() + 1);
-            correct.set(true);
+            let current_index = *index.get();
+            if current_index == 5 {
+                mode.set(AppMode::Endgame);
+            } else {
+                index.set(*index.get() + 1);
+                correct.set(true);
+            }
         } else {
             errors.set(*errors.get() + 1);
             correct.set(false);
@@ -208,22 +212,48 @@ fn quiz_component(props: QuizComponentProps) -> View<G> {
     }
 }
 
+#[component(EndGameComponent<G>)]
+fn end_game_component(props: Props) -> View<G> {
+    let mode = props.mode;
+    let errors = props.errors;
+
+    let restart = cloned!((mode, errors) => move |_| {
+        errors.set(0);
+        mode.set(AppMode::Quiz);
+    });
+
+    view! {
+        p(class="text-align-center") { "Game over! Here's how you did:" }
+        br
+        div(class="text-align-center") {
+            div(class="card text-align-center inline", style="color: red") {
+                p {"Errors:"}
+                p { (errors.get()) }
+            }
+            br
+            button(on:click=restart) { "Restart" }
+        }
+    }
+}
+
 fn main() {
     panic::set_hook(Box::new(console_error_panic_hook::hook));
-    let mode = Signal::new(AppMode::Quiz);
+    let mode = Signal::new(AppMode::Endgame);
     let errors = Signal::new(0usize);
 
     create_effect(cloned!(errors => move || {
         log(format!("{}", errors.get()));
     }));
 
-    sycamore::render(|| view! {
-        div(class="wrapper") {
-            h1(class="text-align-center") { "RiddlRS" }
-            (match *mode.get() {
-                AppMode::Quiz => view! { QuizComponent(QuizComponentProps { mode: cloned!(mode => mode), errors: cloned!(errors => errors) }) },
-                _ => view! { QuizComponent(QuizComponentProps { mode: cloned!(mode => mode), errors: cloned!(errors => errors) }) }
-            })
+    sycamore::render(|| {
+        view! {
+            div(class="wrapper") {
+                h1(class="text-align-center") { "RiddlRS" }
+                (match *mode.get() {
+                    AppMode::Quiz => view! { QuizComponent(Props { mode: cloned!(mode => mode), errors: cloned!(errors => errors) }) },
+                    _ => view! { EndGameComponent(Props { mode: cloned!(mode => mode), errors: cloned!(errors => errors) }) }
+                })
+            }
         }
     });
 }
