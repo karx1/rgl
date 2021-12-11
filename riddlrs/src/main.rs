@@ -4,7 +4,7 @@ use wasm_bindgen::prelude::*;
 
 macro_rules! indexmap {
     ($($key:expr => $value:expr),*) => {{
-        let mut map = IndexMap::new();
+        let mut map = IndexMap::with_capacity(5);
 
         $(
             map.insert($key, $value);            
@@ -99,7 +99,7 @@ fn main() {
         'C' => "Joules"
     }),
     ];
-    log(format!("{:#?}", questions[0]));
+    log(format!("{:#?}", questions));
     sycamore::render(|| template! {
         div(class="wrapper") {
             h1(class="text-align-center") { "RiddlRS" }
