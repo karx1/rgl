@@ -157,11 +157,16 @@ fn main() {
         questions[*index.get()].choices.clone().into_iter().collect::<Vec<(char, &str)>>()
     }));
 
-    let answer_question = cloned!((index, questions) => move |e: Event| {
+    let correct = Signal::new(true);
+
+    let answer_question = cloned!((index, questions, correct) => move |e: Event| {
         let answer = questions[*index.get()].answer;
         let id = read_js_value!(e.target().unwrap(), "id").unwrap().as_string().unwrap().chars().collect::<Vec<char>>()[0];
         if answer == id {
             index.set(*index.get() + 1);
+            correct.set(true);
+        } else {
+            correct.set(false);
         }
     });
 
@@ -180,6 +185,13 @@ fn main() {
                     })
                 }
             }
+            (if !*correct.get() {
+                view! {
+                    p(class="text-align-center", style="color: red") { "Incorrect. Please try again." }
+                }
+            } else {
+                view! {}
+            })
         }
     }));
 }
