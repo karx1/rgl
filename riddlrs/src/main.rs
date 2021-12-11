@@ -6,6 +6,25 @@ use sycamore::prelude::*;
 use wasm_bindgen::prelude::*;
 use web_sys::Event;
 
+#[derive(Clone, Debug, Default)]
+struct Question {
+    prompt: &'static str,
+    answer: char,
+    choices: IndexMap<char, &'static str>,
+}
+
+#[derive(Clone, Debug)]
+enum AppMode {
+    Quiz,
+    Endgame
+}
+
+#[derive(Clone, Debug)]
+struct QuizComponentProps {
+    mode: Signal<AppMode>,
+    errors: Signal<usize>
+}
+
 macro_rules! indexmap {
     ($($key:expr => $value:expr),*) => {{
         let mut map = IndexMap::with_capacity(5);
@@ -70,12 +89,7 @@ macro_rules! read_js_value {
     };
 }
 
-#[derive(Clone, Debug, Default)]
-struct Question {
-    prompt: &'static str,
-    answer: char,
-    choices: IndexMap<char, &'static str>,
-}
+
 
 macro_rules! create_question {
     ($prompt:expr, $answer:expr, $choices:expr) => {
@@ -89,9 +103,8 @@ macro_rules! create_question {
 
 wasm_import!(log(s: String));
 
-fn main() {
-    panic::set_hook(Box::new(console_error_panic_hook::hook));
-
+#[component(QuizComponent<G>)]
+fn quiz_component(props: QuizComponentProps) -> View<G> {
     let questions = [
         create_question!(
             "Which of these fruits contains potassium?",
@@ -158,21 +171,21 @@ fn main() {
     }));
 
     let correct = Signal::new(true);
+    let errors = props.errors;
 
-    let answer_question = cloned!((index, questions, correct) => move |e: Event| {
+    let answer_question = cloned!((index, questions, correct, errors) => move |e: Event| {
         let answer = questions[*index.get()].answer;
         let id = read_js_value!(e.target().unwrap(), "id").unwrap().as_string().unwrap().chars().collect::<Vec<char>>()[0];
         if answer == id {
             index.set(*index.get() + 1);
             correct.set(true);
         } else {
+            errors.set(*errors.get() + 1);
             correct.set(false);
         }
     });
 
-    sycamore::render(cloned!(answer_question => || view! {
-        div(class="wrapper") {
-            h1(class="text-align-center") { "RiddlRS" }
+    view! {
             div(class="card") {
                 p(class="text-align-center") { (current_prompt.get()) }
                 div(class="text-align-center") {
@@ -192,6 +205,25 @@ fn main() {
             } else {
                 view! {}
             })
-        }
+    }
+}
+
+fn main() {
+    panic::set_hook(Box::new(console_error_panic_hook::hook));
+    let mode = Signal::new(AppMode::Quiz);
+    let errors = Signal::new(0usize);
+
+    create_effect(cloned!(errors => move || {
+        log(format!("{}", errors.get()));
     }));
+
+    sycamore::render(|| view! {
+        div(class="wrapper") {
+            h1(class="text-align-center") { "RiddlRS" }
+            (match *mode.get() {
+                AppMode::Quiz => view! { QuizComponent(QuizComponentProps { mode: cloned!(mode => mode), errors: cloned!(errors => errors) }) },
+                _ => view! { QuizComponent(QuizComponentProps { mode: cloned!(mode => mode), errors: cloned!(errors => errors) }) }
+            })
+        }
+    });
 }
