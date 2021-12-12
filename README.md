@@ -1,5 +1,3 @@
-# RGL
+# REPOSITORY MOVED
 
-This is a repo containing all my projects for the [React Group Learn](https://discord.gg/KJG5kFjfWN) Discord server.
-
-Instructions for running each project are in the respective project directories.
+this repository has been moved to https://git.karx.xyz/karx/rgl. Email me if you have any questions.
