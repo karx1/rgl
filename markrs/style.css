@@ -13,3 +13,30 @@
 .text-align-center {
 	text-align: center;
 }
+body {
+	height: 100%;
+}
+
+.flex-container-column {
+	display: flex;
+	height: 75vh;
+	flex-direction: column;
+}
+.flex-container-row {
+	display: flex;
+	height: 75vh;
+	flex-direction: row;
+}
+.flex-child {
+	resize: none;	
+	flex-grow: 1;	
+}
+.card {
+	border: 0.1rem solid #d1d1d1;
+	border-radius: .4rem;
+	padding: .6rem 1.0rem .7rem;
+	margin-bottom: 1.5rem;
+	word-wrap: break-word;
+	white-space: pre-wrap;
+}
+
