@@ -1,3 +1,5 @@
+mod local_storage;
+
 use sycamore::prelude::*;
 use wasm_bindgen::prelude::*;
 
@@ -36,11 +38,13 @@ wasm_import!(setInterval(closure: &Closure<dyn FnMut()>, ms: u32) > f64);
 wasm_import!(clearInterval(id: f64));
 
 fn main() {
-    let value = Signal::new(String::new());
+    let value = Signal::new(local_storage::get_item("markdown").unwrap_or_default());
     let rendered = Signal::new(String::new());
 
     let cb = cloned!((value, rendered) => Closure::wrap(Box::new(move || {
-        rendered.set(markdown::to_html(&*value.get()));
+        let inp = &*value.get();
+        local_storage::set_item("markdown", inp);
+        rendered.set(markdown::to_html(inp));
     }) as Box<dyn FnMut()>));
 
     let id = setInterval(&cb, 1000);
