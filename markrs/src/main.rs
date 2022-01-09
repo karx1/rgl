@@ -37,7 +37,6 @@ wasm_import!(clearInterval(id: f64));
 
 fn main() {
     let value = Signal::new(String::new());
-    // let rendered = create_memo(cloned!(value => move || markdown::to_html(&*value.get())));
     let rendered = Signal::new(String::new());
 
     let cb = cloned!((value, rendered) => Closure::wrap(Box::new(move || {
@@ -55,13 +54,13 @@ fn main() {
     sycamore::render(|| {
         view! {
             h1(class="text-align-center") { "MarkRS" }
-            div(class="flex-container-row wrapper") {
-                div(class="flex-child") {
-                    div(class="flex-container-column") {
-                        textarea(bind:value=value, class="flex-child")
+            div(class="wrapper") {
+                    div(class="flex-container-row") {
+                        div(class="flex-container-column flex-child") {
+                            textarea(bind:value=value)
+                        }
                         div(class="card flex-child", dangerously_set_inner_html=&*rendered.get())
                     }
-                }
             }
             div(class="footer") {
                 "Made with Rust 1.57.0 and WASM"

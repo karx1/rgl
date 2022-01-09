@@ -15,11 +15,13 @@
 }
 body {
 	height: 100%;
+	line-height: 1.15;
 }
 
 .flex-container-column {
 	display: flex;
 	height: 75vh;
+	width: 100%;
 	flex-direction: column;
 }
 .flex-container-row {
@@ -27,14 +29,18 @@ body {
 	height: 75vh;
 	flex-direction: row;
 }
-.flex-child {
-	resize: none;	
-	flex-grow: 1;	
-}
 .card {
 	border: 0.1rem solid #d1d1d1;
 	border-radius: .4rem;
-	padding: .6rem 1.0rem .7rem;
+	padding: .6rem 1.0rem 0;
+	margin-left: 1.5rem;
 	margin-bottom: 1.5rem;
+	width: 100%
 }
-
+textarea {
+	resize: none;
+	flex-grow: 1;
+}
+.flex-child {
+	flex-grow: 1;
+}
