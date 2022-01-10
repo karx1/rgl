@@ -1,5 +1,6 @@
 mod local_storage;
 
+use pulldown_cmark::{html, Options, Parser};
 use sycamore::prelude::*;
 use wasm_bindgen::prelude::*;
 
@@ -44,7 +45,16 @@ fn main() {
     let cb = cloned!((value, rendered) => Closure::wrap(Box::new(move || {
         let inp = &*value.get();
         local_storage::set_item("markdown", inp);
-        rendered.set(markdown::to_html(inp));
+
+        let mut options = Options::empty();
+        options.insert(Options::ENABLE_TABLES);
+        options.insert(Options::ENABLE_STRIKETHROUGH);
+        let parser = Parser::new_ext(inp, options);
+
+        let mut buf = String::new();
+        html::push_html(&mut buf, parser);
+
+        rendered.set(buf);
     }) as Box<dyn FnMut()>));
 
     let id = setInterval(&cb, 1000);
