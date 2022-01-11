@@ -38,6 +38,8 @@ macro_rules! wasm_import {
 wasm_import!(setInterval(closure: &Closure<dyn FnMut()>, ms: u32) > f64);
 wasm_import!(clearInterval(id: f64));
 
+wasm_import!(setupDownload(md: &str));
+
 fn main() {
     let value = Signal::new(local_storage::get_item("markdown").unwrap_or_default());
     let rendered = Signal::new(String::new());
@@ -45,6 +47,7 @@ fn main() {
     let cb = cloned!((value, rendered) => Closure::wrap(Box::new(move || {
         let inp = &*value.get();
         local_storage::set_item("markdown", inp);
+        setupDownload(inp);
 
         let mut options = Options::empty();
         options.insert(Options::ENABLE_TABLES);
@@ -68,6 +71,9 @@ fn main() {
     sycamore::render(|| {
         view! {
             h1(class="text-align-center") { "MarkRS" }
+            div(class="text-align-center") {
+                a(id="save", class="button") { "Save" }
+            }
             div(class="wrapper") {
                     div(class="flex-container-row") {
                         div(class="flex-container-column flex-child") {
