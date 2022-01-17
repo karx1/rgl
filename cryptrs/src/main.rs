@@ -17,10 +17,10 @@ enum AppMode {
 fn encryption_component() -> View<G> {
     let keyword = Signal::new(String::new());
     let input = Signal::new(String::new());
+    let no_key = Signal::new(false);
 
 
-
-    let crypted = create_memo(cloned!((keyword, input) => move || {
+    let crypted = create_memo(cloned!((keyword, input, no_key) => move || {
         let keyword = &**keyword.get();
 
         let mut key = String::new();
@@ -38,13 +38,16 @@ fn encryption_component() -> View<G> {
         let mut generated = String::with_capacity(input.get().len());
 
         for (i, c) in input.get().chars().enumerate() {
-            let char = key.chars().nth(i).unwrap(); // we can safely assume that this is not None because we made the key the same length as input
+            if let Some(char) = key.chars().nth(i) {
+                no_key.set(false);
+                let mut x = (c.to_ascii_uppercase() as u16 + char as u16) % 26;
 
-            let mut x = (c.to_ascii_uppercase() as u16 + char as u16) % 26;
+                x += 'A' as u16;
 
-            x += 'A' as u16;
-
-            generated.push(char::from_u32(x as u32).unwrap());
+                generated.push(char::from_u32(x as u32).unwrap());
+            } else {
+                no_key.set(true);
+            }
         }
 
         generated
@@ -57,6 +60,13 @@ fn encryption_component() -> View<G> {
         label { "Input:"
             input(bind:value=input)
         }
+        (if *no_key.get() {
+            view! {
+                p(class="text-align-center", style="color: red") { "No keyword was provided" }
+            }
+        } else {
+            view! {}
+        })
         div(class="card") {
             (crypted.get())
         }
@@ -67,8 +77,9 @@ fn encryption_component() -> View<G> {
 fn decryption_component() -> View<G> {
     let keyword = Signal::new(String::new());
     let input = Signal::new(String::new());
+    let no_key = Signal::new(false);
     
-    let decrypted = create_memo(cloned!((keyword, input) => move || {
+    let decrypted = create_memo(cloned!((keyword, input, no_key) => move || {
         let keyword = &**keyword.get();
 
         let mut key = String::new();
@@ -86,13 +97,16 @@ fn decryption_component() -> View<G> {
         let mut generated = String::with_capacity(input.get().len());
 
         for (i, c) in input.get().chars().enumerate() {
-            let char = key.chars().nth(i).unwrap(); // we can safely assume that this is not None because we made the key the same length as input
+            if let Some(char) = key.chars().nth(i) {
+                no_key.set(false);
+                let mut x = (c.to_ascii_uppercase() as i16 - char as i16 + 26) as u16 % 26;
 
-            let mut x = (c.to_ascii_uppercase() as i16 - char as i16 + 26) as u16 % 26;
+                x += 'A' as u16;
 
-            x += 'A' as u16;
-
-            generated.push(char::from_u32(x as u32).unwrap());
+                generated.push(char::from_u32(x as u32).unwrap());
+            } else {
+                no_key.set(true);
+            }
         }
 
         generated
@@ -105,6 +119,13 @@ fn decryption_component() -> View<G> {
         label { "Input:"
             input(bind:value=input)
         }
+        (if *no_key.get() {
+            view! {
+                p(class="text-align-center", style="color: red") { "No keyword was provided" }
+            }
+        } else {
+            view! {}
+        })
         div(class="card") {
             (decrypted.get())
         }
