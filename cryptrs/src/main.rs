@@ -113,14 +113,17 @@ fn decryption_component() -> View<G> {
 
 fn main() {
     panic::set_hook(Box::new(console_error_panic_hook::hook));
-    let mode = Signal::new(AppMode::Decrypt);
+    let mode = Signal::new(AppMode::Encrypt);
+
+    let set_encrypt = cloned!(mode => move |_| mode.set(AppMode::Encrypt));
+    let set_decrypt = cloned!(mode => move |_| mode.set(AppMode::Decrypt));
 
     sycamore::render(|| {
         view! {
             h1(class="text-align-center") { "CryptRS" }
             div(class="text-align-center") {
-                button { "Encrypt" }
-                button { "Decrypt" }
+                button(on:click=set_encrypt) { "Encrypt" }
+                button(on:click=set_decrypt) { "Decrypt" }
             }
             div(class="wrapper") {
                 (match *mode.get() {
