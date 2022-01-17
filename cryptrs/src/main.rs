@@ -8,7 +8,13 @@ extern "C" {
     fn log(s: &str);
 }
 
-fn main() {
+enum AppMode {
+    Encrypt,
+    Decrypt
+}
+
+#[component(EncryptionComponent<G>)]
+fn encryption_component() -> View<G> {
     panic::set_hook(Box::new(console_error_panic_hook::hook));
     let keyword = Signal::new(String::new());
     let input = Signal::new(String::new());
@@ -45,19 +51,30 @@ fn main() {
         generated
     })); 
 
+    view! {
+        label { "Keyword:" 
+            input(placeholder="key", bind:value=keyword)
+        }
+        label { "Input:"
+            input(placeholder="secrets", bind:value=input)
+        }
+        div(class="card") {
+            (crypted.get())
+        }
+    }
+}
+
+fn main() {
+    let mode = Signal::new(AppMode::Encrypt);
+
     sycamore::render(|| {
         view! {
             h1(class="text-align-center") { "CryptRS" }
             div(class="wrapper") {
-                label { "Keyword:" 
-                    input(placeholder="key", bind:value=keyword)
-                }
-                label { "Input:"
-                    input(placeholder="secrets", bind:value=input)
-                }
-                div(class="card") {
-                    (crypted.get())
-                }
+                (match *mode.get() {
+                    AppMode::Encrypt => view! { EncryptionComponent() },
+                    AppMode::Decrypt => todo!()
+                })
             }
         }
     });
