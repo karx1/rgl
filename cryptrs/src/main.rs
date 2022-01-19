@@ -1,5 +1,5 @@
-use sycamore::prelude::*;
 use std::panic;
+use sycamore::prelude::*;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -10,7 +10,7 @@ extern "C" {
 
 enum AppMode {
     Encrypt,
-    Decrypt
+    Decrypt,
 }
 
 #[component(EncryptionComponent<G>)]
@@ -18,7 +18,6 @@ fn encryption_component() -> View<G> {
     let keyword = Signal::new(String::new());
     let input = Signal::new(String::new());
     let no_key = Signal::new(false);
-
 
     let crypted = create_memo(cloned!((keyword, input, no_key) => move || {
         let keyword = &**keyword.get();
@@ -51,10 +50,10 @@ fn encryption_component() -> View<G> {
         }
 
         generated
-    })); 
+    }));
 
     view! {
-        label { "Keyword:" 
+        label { "Keyword:"
             input(bind:value=keyword)
         }
         label { "Input:"
@@ -78,7 +77,7 @@ fn decryption_component() -> View<G> {
     let keyword = Signal::new(String::new());
     let input = Signal::new(String::new());
     let no_key = Signal::new(false);
-    
+
     let decrypted = create_memo(cloned!((keyword, input, no_key) => move || {
         let keyword = &**keyword.get();
 
