@@ -26,6 +26,8 @@ macro_rules! wasm_import_with_ns {
 wasm_import!(toggle_cards());
 wasm_import_with_ns!(console, log(s: &str));
 
+wasm_import!(setTimeout(closure: &Closure<dyn Fn()>, time: u32));
+
 fn main() {
     sycamore::render(|ctx| {
         console_error_panic_hook::set_once();
@@ -41,6 +43,8 @@ fn main() {
 
         let v = ctx.create_signal(cards);
 
+        let first: &Signal<Option<Element>> = ctx.create_signal(None);
+
         let on_click = |event: Event| {
             let elem = event
                 .current_target()
@@ -48,7 +52,37 @@ fn main() {
                 .dyn_ref::<Element>()
                 .unwrap()
                 .clone();
+
+            if elem.class_list().contains("disabled") {
+                return;
+            }
+
             elem.class_list().toggle("flip").unwrap();
+
+            if let Some(ref felem) = *first.get() {
+                let attr1 = felem.get_attribute("data_value");
+                let attr2 = elem.get_attribute("data_value");
+
+                if attr1 == attr2 {
+                    // these are all ok to unwrap, because it should never ever fail
+                    felem.class_list().toggle("disabled").unwrap();
+                    elem.class_list().toggle("disabled").unwrap();
+                } else {
+                    let felem = felem.clone();
+                    let cb = Closure::wrap(Box::new(move || {
+                        felem.class_list().toggle("flip").unwrap();
+                        elem.class_list().toggle("flip").unwrap();
+                    }) as Box<dyn Fn()>);
+
+                    setTimeout(&cb, 750);
+
+                    cb.forget();
+                }
+
+                first.set(None);
+            } else {
+                first.set(Some(elem));
+            }
         };
 
         view! {ctx,
