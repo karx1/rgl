@@ -23,7 +23,8 @@ macro_rules! wasm_import_with_ns {
     };
 }
 
-wasm_import!(toggle_cards());
+wasm_import!(reset_cards());
+wasm_import!(alert(s: &str));
 wasm_import_with_ns!(console, log(s: &str));
 
 wasm_import!(setTimeout(closure: &Closure<dyn Fn()>, time: u32));
@@ -54,6 +55,7 @@ fn GameComponent<G: Html>(ctx: ScopeRef<'_>) -> View<G> {
     let v = ctx.create_signal(cards);
 
     let first: &Signal<Option<Element>> = ctx.create_signal(None);
+    let matches = ctx.create_signal(0u8);
 
     let on_click = |event: Event| {
         let elem = event
@@ -77,6 +79,7 @@ fn GameComponent<G: Html>(ctx: ScopeRef<'_>) -> View<G> {
                 // these are all ok to unwrap, because it should never ever fail
                 felem.class_list().toggle("disabled").unwrap();
                 elem.class_list().toggle("disabled").unwrap();
+                matches.set(*matches.get() + 1);
             } else {
                 let felem = felem.clone();
                 let cb = Closure::wrap(Box::new(move || {
@@ -92,6 +95,15 @@ fn GameComponent<G: Html>(ctx: ScopeRef<'_>) -> View<G> {
             first.set(None);
         } else {
             first.set(Some(elem));
+        }
+
+        if (*matches.get()) == 6 {
+            alert("You won! Press OK to restart");
+            reset_cards();
+            matches.set(0);
+            let mut c = (*v.get()).clone();
+            c.shuffle(&mut rand::rngs::OsRng);
+            v.set(c);
         }
     };
 
