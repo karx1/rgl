@@ -38,78 +38,77 @@ fn main() {
             }
         }
     });
+}
 
 #[component]
 fn GameComponent<G: Html>(ctx: ScopeRef<'_>) -> View<G> {
-        let mut cards = ["burger", "fries", "hotdog", "soda", "nachos", "tacos"]
-            .into_iter()
-            .cycle()
-            .take(12)
-            // .map(|s| s.to_string())
-            .collect::<Vec<_>>();
+    let mut cards = ["burger", "fries", "hotdog", "soda", "nachos", "tacos"]
+        .into_iter()
+        .cycle()
+        .take(12)
+        // .map(|s| s.to_string())
+        .collect::<Vec<_>>();
 
-        cards.shuffle(&mut rand::rngs::OsRng);
+    cards.shuffle(&mut rand::rngs::OsRng);
 
-        let v = ctx.create_signal(cards);
+    let v = ctx.create_signal(cards);
 
-        let first: &Signal<Option<Element>> = ctx.create_signal(None);
+    let first: &Signal<Option<Element>> = ctx.create_signal(None);
 
-        let on_click = |event: Event| {
-            let elem = event
-                .current_target()
-                .unwrap()
-                .dyn_ref::<Element>()
-                .unwrap()
-                .clone();
+    let on_click = |event: Event| {
+        let elem = event
+            .current_target()
+            .unwrap()
+            .dyn_ref::<Element>()
+            .unwrap()
+            .clone();
 
-            if elem.class_list().contains("disabled") {
-                return;
-            }
+        if elem.class_list().contains("disabled") {
+            return;
+        }
 
-            elem.class_list().toggle("flip").unwrap();
+        elem.class_list().toggle("flip").unwrap();
 
-            if let Some(ref felem) = *first.get() {
-                let attr1 = felem.get_attribute("data_value");
-                let attr2 = elem.get_attribute("data_value");
+        if let Some(ref felem) = *first.get() {
+            let attr1 = felem.get_attribute("data_value");
+            let attr2 = elem.get_attribute("data_value");
 
-                if attr1 == attr2 {
-                    // these are all ok to unwrap, because it should never ever fail
-                    felem.class_list().toggle("disabled").unwrap();
-                    elem.class_list().toggle("disabled").unwrap();
-                } else {
-                    let felem = felem.clone();
-                    let cb = Closure::wrap(Box::new(move || {
-                        felem.class_list().toggle("flip").unwrap();
-                        elem.class_list().toggle("flip").unwrap();
-                    }) as Box<dyn Fn()>);
-
-                    setTimeout(&cb, 750);
-
-                    cb.forget();
-                }
-
-                first.set(None);
+            if attr1 == attr2 {
+                // these are all ok to unwrap, because it should never ever fail
+                felem.class_list().toggle("disabled").unwrap();
+                elem.class_list().toggle("disabled").unwrap();
             } else {
-                first.set(Some(elem));
-            }
-        };
+                let felem = felem.clone();
+                let cb = Closure::wrap(Box::new(move || {
+                    felem.class_list().toggle("flip").unwrap();
+                    elem.class_list().toggle("flip").unwrap();
+                }) as Box<dyn Fn()>);
 
-        view! {ctx,
-            section(id="game") {
-                Keyed {
-                    iterable: v,
-                    view: move |ctx, i| view! {ctx,
-                        div(class="card", on:click=on_click, data_value=i.clone()) {
-                            h2(class="back-face") {
-                                (i)
-                            }
-                            div(class="front-face")
+                setTimeout(&cb, 750);
+
+                cb.forget();
+            }
+
+            first.set(None);
+        } else {
+            first.set(Some(elem));
+        }
+    };
+
+    view! {ctx,
+        section(id="game") {
+            Keyed {
+                iterable: v,
+                view: move |ctx, i| view! {ctx,
+                    div(class="card", on:click=on_click, data_value=i.clone()) {
+                        h2(class="back-face") {
+                            (i)
                         }
-                    },
-                    key: |x| x.clone()
-                }
+                        div(class="front-face")
+                    }
+                },
+                key: |x| x.clone()
             }
         }
-}
-
+    }
 }
