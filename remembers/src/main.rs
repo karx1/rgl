@@ -31,7 +31,16 @@ wasm_import!(setTimeout(closure: &Closure<dyn Fn()>, time: u32));
 fn main() {
     sycamore::render(|ctx| {
         console_error_panic_hook::set_once();
+        view! {ctx,
+            div(class="wrapper") {
+                h1(class="text-align-center") { "RemembeRS" }
+                GameComponent()
+            }
+        }
+    });
 
+#[component]
+fn GameComponent<G: Html>(ctx: ScopeRef<'_>) -> View<G> {
         let mut cards = ["burger", "fries", "hotdog", "soda", "nachos", "tacos"]
             .into_iter()
             .cycle()
@@ -86,8 +95,6 @@ fn main() {
         };
 
         view! {ctx,
-            div(class="wrapper") {
-            h1(class="text-align-center") { "RemembeRS" }
             section(id="game") {
                 Keyed {
                     iterable: v,
@@ -102,7 +109,7 @@ fn main() {
                     key: |x| x.clone()
                 }
             }
-            }
         }
-    });
+}
+
 }
