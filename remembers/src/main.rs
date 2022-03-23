@@ -29,20 +29,59 @@ wasm_import_with_ns!(console, log(s: &str));
 
 wasm_import!(setTimeout(closure: &Closure<dyn Fn()>, time: u32));
 
+enum AppMode {
+    StartScreen,
+    GameScreen,
+}
+
+#[derive(Prop)]
+struct ModeProp<'a> {
+    mode: &'a Signal<AppMode>,
+}
+
 fn main() {
     sycamore::render(|ctx| {
         console_error_panic_hook::set_once();
+
+        let mode = ctx.create_signal(AppMode::StartScreen);
+
         view! {ctx,
             div(class="wrapper") {
                 h1(class="text-align-center") { "RemembeRS" }
-                GameComponent()
+                (match *mode.get() {
+                    AppMode::StartScreen => view! {ctx,
+                        StartComponent {
+                            mode: mode
+                        }
+                    },
+                    AppMode::GameScreen => view! {ctx,
+                        GameComponent {
+                            mode: mode
+                        }
+                    }
+                })
             }
         }
     });
 }
 
 #[component]
-fn GameComponent<G: Html>(ctx: ScopeRef<'_>) -> View<G> {
+fn StartComponent<'a, G: Html>(ctx: ScopeRef<'a>, props: ModeProp<'a>) -> View<G> {
+    let on_click = |_| {
+        props.mode.set(AppMode::GameScreen);
+    };
+
+    view! {ctx,
+        div(class="start-button-container") {
+            button(on:click=on_click) {
+                "Start"
+            }
+        }
+    }
+}
+
+#[component]
+fn GameComponent<'a, G: Html>(ctx: ScopeRef<'a>, _props: ModeProp<'a>) -> View<G> {
     let mut cards = ["burger", "fries", "hotdog", "soda", "nachos", "tacos"]
         .into_iter()
         .cycle()

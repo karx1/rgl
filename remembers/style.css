@@ -79,3 +79,9 @@ h1 {
     align-items: center;
     justify-content: center;
 }
+
+.start-button-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
