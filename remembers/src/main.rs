@@ -26,6 +26,7 @@ macro_rules! wasm_import_with_ns {
 wasm_import!(reset_cards());
 wasm_import!(alert(s: &str));
 wasm_import_with_ns!(console, log(s: &str));
+wasm_import_with_ns!(Date, now() -> u32);
 
 wasm_import!(setTimeout(closure: &Closure<dyn Fn()>, time: u32));
 
@@ -96,6 +97,8 @@ fn GameComponent<'a, G: Html>(ctx: ScopeRef<'a>, _props: ModeProp<'a>) -> View<G
     let first: &Signal<Option<Element>> = ctx.create_signal(None);
     let matches = ctx.create_signal(0u8);
 
+    let start_time = ctx.create_signal(now() / 1000);
+
     let on_click = |event: Event| {
         let elem = event
             .current_target()
@@ -137,12 +140,19 @@ fn GameComponent<'a, G: Html>(ctx: ScopeRef<'a>, _props: ModeProp<'a>) -> View<G
         }
 
         if (*matches.get()) == 6 {
-            alert("You won! Press OK to restart");
+            let curr_time = now() / 1000;
+            let diff = curr_time - *start_time.get();
+            log(&format_time(diff));
+            alert(&format!(
+                "You won! Took {}. Press OK to restart",
+                format_time(diff)
+            ));
             reset_cards();
             matches.set(0);
             let mut c = (*v.get()).clone();
             c.shuffle(&mut rand::rngs::OsRng);
             v.set(c);
+            start_time.set(now() / 1000);
         }
     };
 
@@ -162,4 +172,19 @@ fn GameComponent<'a, G: Html>(ctx: ScopeRef<'a>, _props: ModeProp<'a>) -> View<G
             }
         }
     }
+}
+
+fn add_leading_zeroes(num: u32) -> String {
+    if num < 10 {
+        format!("0{}", num)
+    } else {
+        format!("{}", num)
+    }
+}
+
+fn format_time(inp: u32) -> String {
+    let minutes = add_leading_zeroes((inp / 60) % 60);
+    let seconds = add_leading_zeroes(inp % 60);
+
+    format!("{}:{}", minutes, seconds)
 }
