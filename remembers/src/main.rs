@@ -114,6 +114,10 @@ fn GameComponent<'a, G: Html>(ctx: ScopeRef<'a>, _props: ModeProp<'a>) -> View<G
         elem.class_list().toggle("flip").unwrap();
 
         if let Some(ref felem) = *first.get() {
+            if elem == *felem {
+                first.set(None);
+                return;
+            }
             let attr1 = felem.get_attribute("data_value");
             let attr2 = elem.get_attribute("data_value");
 
