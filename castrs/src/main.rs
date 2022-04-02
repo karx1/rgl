@@ -1,4 +1,5 @@
 mod fetch;
+mod types;
 
 use sycamore::prelude::*;
 use wasm_bindgen::prelude::*;

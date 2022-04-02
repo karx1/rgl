@@ -2,8 +2,10 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{Request, RequestInit, RequestMode, Response};
+use serde_json::Value;
+use crate::types::*;
 
-pub async fn make_request<S: AsRef<str>>(endpoint: S, method: S) -> Result<JsValue, JsValue> {
+pub async fn make_request<S: AsRef<str>>(endpoint: S, method: S) -> Result<Vec<Returned>, JsValue> {
     let mut opts = RequestInit::new();
     opts.method(method.as_ref());
     opts.mode(RequestMode::Cors);
@@ -22,5 +24,23 @@ pub async fn make_request<S: AsRef<str>>(endpoint: S, method: S) -> Result<JsVal
 
     let json = JsFuture::from(resp.json()?).await?;
 
-    Ok(json)
+    let v = json.into_serde::<Value>().unwrap()["results"].as_array().to_owned();
+
+    let mut new: Vec<Returned> = Vec::with_capacity(v.len());
+
+    for item in v {
+        let e = serde_json::from_value::<Episode>(item.clone());
+        let p = serde_json::from_value::<Podcast>(item.clone());
+        let c = serde_json::from_value::<Curated>(item.clone());
+
+        if let Ok(e) = e {
+            new.push(Returned::Episode(e));
+        } else if let Ok(p) = p { 
+            new.push(Returned::Podcast(p));
+        } else if let Ok(c) = c {
+            new.push(c);
+        }
+    }
+
+    Ok(new)
 }
