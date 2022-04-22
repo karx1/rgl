@@ -1,3 +1,4 @@
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::ops::Deref;
 use sycamore::prelude::*;
@@ -48,6 +49,8 @@ fn main() {
         let token = get_token();
         let data = String::from_utf8(base64::decode(&token).unwrap()).unwrap();
         log(&data);
+        let deck: Deck = serde_json::from_str(&data).unwrap();
+        let current = create_signal(ctx, rand::thread_rng().gen_range(0..deck.len()));
         view! {ctx,
             div(class="wrapper") {
                 h1(class="text-align-center") { "Quicksilver" }
