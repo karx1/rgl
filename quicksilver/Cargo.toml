@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 base64 = "0.13.0"
+console_error_panic_hook = "0.1.7"
 getrandom = { version = "0.2.6", features = ["js"] }
 rand = "0.8.5"
 serde = { version = "1.0.136", features = ["derive"] }
