@@ -29,6 +29,15 @@ button + button {
     margin-left: 10px;
 }
 
+input {
+    width: 100%;
+    margin: 5px;
+    border-radius: 5px;
+    border: 1px solid black;
+    padding: 5px
+
+}
+
 .card {
     height: 100%;
     width: 100%;

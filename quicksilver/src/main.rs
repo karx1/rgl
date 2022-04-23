@@ -45,6 +45,7 @@ struct Card {
 wasm_import!(get_token() -> Option<String>);
 wasm_import!(prompt(s: &str) -> Option<String>);
 wasm_import!(set_location(l: &str));
+wasm_import!(alert(s: &str));
 wasm_import_with_ns!(console, log(s: &str));
 
 #[component]
@@ -113,10 +114,74 @@ fn CreatorComponent<G: Html>(ctx: Scope) -> View<G> {
         }
     };
 
+    let front = create_signal(ctx, String::new());
+    let back = create_signal(ctx, String::new());
+
+    let error_empty = create_signal(ctx, false);
+    let error_parse = create_signal(ctx, false);
+
+    let cards = create_signal(ctx, Vec::new());
+
+    let do_add = |_| {
+        let f = (*front.get()).clone();
+        let b = (*back.get()).clone();
+
+        error_empty.set(f.is_empty() || b.is_empty());
+
+        let c = Card { front: f, back: b };
+        if cards.get().contains(&c) {
+            return;
+        } // skip duplicate cards
+        cards.modify().push(c);
+        front.set(String::new());
+        back.set(String::new());
+    };
+
+    let do_export = |_| {
+        let d = Deck((*cards.get()).clone());
+
+        let r = serde_json::to_string(&d);
+
+        if let Ok(s) = r {
+            error_parse.set(false);
+            let e = base64::encode(s.as_bytes());
+            let f = format!("Your deck code is: {}", e);
+            alert(&f);
+        } else {
+            error_parse.set(true);
+        }
+    };
+
     view! {ctx,
         div(class="text-align-center") {
             button(on:click=do_import) {"Import"}
-            button() {"Export"}
+            button(on:click=do_export) {"Export"}
+            br
+            input(bind:value=front)
+            input(bind:value=back)
+            (if *error_empty.get() {
+                view! {ctx, p(style="color: red") {"Make sure none of the inputs are empty!"}}
+            } else {
+                view! {ctx,}
+            })
+            (if *error_parse.get() {
+                view! {ctx, p(style="color: red") {"Something went wrong. Please try again."}}
+            } else {
+                view! {ctx,}
+            })
+            button(on:click=do_add) {"Add"}
+            Indexed {
+                iterable: cards,
+                view: |ctx, card| view! {ctx,
+                    div(class="card", style="background-color: white;") {
+                        "Front:"
+                        (card.front)
+                        br
+                        "Back:"
+                        (card.back)
+                    }
+                }
+            }
         }
     }
 }
