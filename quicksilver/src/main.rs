@@ -53,7 +53,13 @@ fn CardsComponent<G: Html>(ctx: Scope) -> View<G> {
     let deck_len = deck.len();
 
     let recompute_current = move |_| {
-        current.set(rand::thread_rng().gen_range(0..deck_len));
+        let prev = *current.get();
+        let mut genned = rand::thread_rng().gen_range(0..deck_len);
+        while genned == prev {
+            genned = rand::thread_rng().gen_range(0..deck_len);
+        }
+
+        current.set(genned);
     };
 
     view! {ctx,
