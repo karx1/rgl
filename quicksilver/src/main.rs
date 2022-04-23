@@ -63,18 +63,20 @@ fn CardsComponent<G: Html>(ctx: Scope) -> View<G> {
     };
 
     view! {ctx,
-        button(on:click=recompute_current) { "Next" }
-        ({
-            let current_card = deck[*current.get()].clone();
-            view! {ctx,
-                div {
-                    (current_card.front)
+        div(class="text-align-center") {
+            button(on:click=recompute_current) { "Next" }
+            ({
+                let current_card = deck[*current.get()].clone();
+                view! {ctx,
+                    div {
+                        (current_card.front)
+                    }
+                    div {
+                        (current_card.back)
+                    }
                 }
-                div {
-                    (current_card.back)
-                }
-            }
-        })
+            })
+        }
     }
 }
 
