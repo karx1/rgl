@@ -3,6 +3,7 @@
     margin: auto;
     width: 60%;
     padding: 10px;
+    perspective: 1000px;
 }
 
 .text-align-center {
@@ -22,4 +23,55 @@ button {
 
 button:active {
     background-color: #00008B;
+}
+
+.card {
+    height: 100%;
+    width: 100%;
+    margin: 5px;
+    border: 1px black solid;
+    border-radius: 5px;
+    box-shadow: 1px 1px 5px 0px rgba(0,0,0,0.75);
+    -webkit-box-shadow: 1px 3px 5px 0px rgba(0,0,0,0.75);
+    -moz-box-shadow: 1px 3px 5px 0px rgba(0,0,0,0.75);
+    transform: scale(1);
+    transform-style: preserve-3d;
+    transition: transform .5s;
+    background-color: blue;
+}
+
+.card-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.card:active {
+    transform: scale(0.97);
+    transition: transform .2s;
+}
+
+.card.flip {
+    transform: rotateY(180deg);
+    background-color: white;
+}
+
+.back-face, .front-face {
+    padding: 20px;
+    backface-visibility: hidden;
+    -moz-backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card .flip .front-face {
+    transform: rotateY(180deg);
+}
+
+.back-face {
+    transform: rotateY(180deg);
+    word-break: break-all;
 }

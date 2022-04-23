@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use std::ops::Deref;
 use sycamore::prelude::*;
 use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsCast;
+use web_sys::{Element, Event};
 
 macro_rules! wasm_import {
     ($($tt:tt)*) => {
@@ -62,21 +64,36 @@ fn CardsComponent<G: Html>(ctx: Scope) -> View<G> {
         current.set(genned);
     };
 
+    let on_click = |event: Event| {
+        let elem = event
+            .current_target()
+            .unwrap()
+            .dyn_ref::<Element>()
+            .unwrap()
+            .clone();
+
+        elem.class_list().toggle("flip").unwrap();
+    };
+
     view! {ctx,
         div(class="text-align-center") {
             button(on:click=recompute_current) { "Next" }
-            ({
-                let current_card = deck[*current.get()].clone();
-                view! {ctx,
-                    div {
-                        (current_card.front)
-                    }
-                    div {
-                        (current_card.back)
+        }
+        ({
+            let current_card = deck[*current.get()].clone();
+            view! {ctx,
+                div(class="card-container") {
+                        h2(class="front-face") {
+                            (current_card.front)
+                        }
+                    div(class="card", on:click=on_click) {
+                        div(class="back-face") {
+                            (current_card.back)
+                        }
                     }
                 }
-            })
-        }
+            }
+        })
     }
 }
 
