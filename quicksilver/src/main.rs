@@ -43,6 +43,8 @@ struct Card {
 }
 
 wasm_import!(get_token() -> Option<String>);
+wasm_import!(prompt(s: &str) -> Option<String>);
+wasm_import!(set_location(l: &str));
 wasm_import_with_ns!(console, log(s: &str));
 
 #[component]
@@ -97,6 +99,28 @@ fn CardsComponent<G: Html>(ctx: Scope) -> View<G> {
     }
 }
 
+#[component]
+fn CreatorComponent<G: Html>(ctx: Scope) -> View<G> {
+    let do_import = |_| {
+        let p = prompt("Deck code:");
+        if let Some(inp) = p {
+            let stripped = inp
+                .chars()
+                .filter(|c| !c.is_whitespace())
+                .collect::<String>();
+            let f = format!("/?deck={}", stripped);
+            set_location(&f);
+        }
+    };
+
+    view! {ctx,
+        div(class="text-align-center") {
+            button(on:click=do_import) {"Import"}
+            button() {"Export"}
+        }
+    }
+}
+
 fn main() {
     console_error_panic_hook::set_once();
     sycamore::render(|ctx| {
@@ -104,11 +128,9 @@ fn main() {
             div(class="wrapper") {
                 h1(class="text-align-center") { "Quicksilver" }
                 (if get_token().is_some() {
-                    view! {ctx, CardsComponent {
-
-                    }}
+                    view! {ctx, CardsComponent {}}
                 } else {
-                    view! {ctx, }
+                    view! {ctx, CreatorComponent {}}
                 })
             }
         }

@@ -3,3 +3,7 @@ function get_token() {
     let token = params.get("deck");
     return token;
 }
+
+function set_location(l) {
+    window.location = l; 
+}
