@@ -60,8 +60,10 @@ fn CardsComponent<G: Html>(ctx: Scope) -> View<G> {
     let recompute_current = move |_| {
         let prev = *current.get();
         let mut genned = rand::thread_rng().gen_range(0..deck_len);
-        while genned == prev {
-            genned = rand::thread_rng().gen_range(0..deck_len);
+        if deck_len > 1 {
+            while genned == prev {
+                genned = rand::thread_rng().gen_range(0..deck_len);
+            }
         }
 
         current.set(genned);
@@ -78,8 +80,11 @@ fn CardsComponent<G: Html>(ctx: Scope) -> View<G> {
         elem.class_list().toggle("flip").unwrap();
     };
 
+    let go_home = |_| set_location("/");
+
     view! {ctx,
         div(class="text-align-center") {
+            button(on:click=go_home) { "Home" }
             button(on:click=recompute_current) { "Next" }
         }
         ({
@@ -126,19 +131,25 @@ fn CreatorComponent<G: Html>(ctx: Scope) -> View<G> {
         let f = (*front.get()).clone();
         let b = (*back.get()).clone();
 
-        error_empty.set(f.is_empty() || b.is_empty());
+        if f.is_empty() || b.is_empty() {
+            error_empty.set(true);
+            return;
+        }
 
         let c = Card { front: f, back: b };
-        if cards.get().contains(&c) {
-            return;
+        if !cards.get().contains(&c) {
+            cards.modify().push(c);
+            front.set(String::new());
+            back.set(String::new());
         } // skip duplicate cards
-        cards.modify().push(c);
-        front.set(String::new());
-        back.set(String::new());
     };
 
     let do_export = |_| {
         let d = Deck((*cards.get()).clone());
+
+        if d.is_empty() {
+            return;
+        }
 
         let r = serde_json::to_string(&d);
 
