@@ -114,18 +114,6 @@ fn CardsComponent<G: Html>(ctx: Scope) -> View<G> {
 
 #[component]
 fn CreatorComponent<G: Html>(ctx: Scope) -> View<G> {
-    let do_import = |_| {
-        let p = prompt("Deck code:");
-        if let Some(inp) = p {
-            let stripped = inp
-                .chars()
-                .filter(|c| !c.is_whitespace())
-                .collect::<String>();
-            let f = format!("/?deck={}", stripped);
-            set_location(&f);
-        }
-    };
-
     let front = create_signal(ctx, String::new());
     let back = create_signal(ctx, String::new());
 
@@ -144,6 +132,18 @@ fn CreatorComponent<G: Html>(ctx: Scope) -> View<G> {
         let items: Vec<Card> = serde_json::from_str(&parsed).unwrap_or_default();
         *cards.modify() = items;
     }
+
+    let do_import = |_| {
+        let p = prompt("Deck code:");
+        if let Some(inp) = p {
+            let stripped = inp
+                .chars()
+                .filter(|c| !c.is_whitespace())
+                .collect::<String>();
+            let f = format!("/?deck={}", stripped);
+            set_location(&f);
+        }
+    };
 
     let do_add = |_| {
         let f = (*front.get()).clone();
@@ -181,9 +181,33 @@ fn CreatorComponent<G: Html>(ctx: Scope) -> View<G> {
         }
     };
 
+    let do_use_current = |_| {
+        let d = Deck((*cards.get()).clone());
+
+        if d.is_empty() {
+            return;
+        }
+
+        let r = serde_json::to_string(&d);
+
+        if let Ok(s) = r {
+            error_parse.set(false);
+            let e = base64::encode(s.as_bytes());
+            let f = format!("/?deck={}", e);
+            set_location(&f);
+        } else {
+            error_parse.set(true);
+        }
+    };
+
+    let do_delete_last = |_| {
+        cards.modify().pop();
+    };
+
     view! {ctx,
         div(class="text-align-center") {
             button(on:click=do_import) {"Import"}
+            button(on:click=do_use_current) {"Use Current Deck"}
             button(on:click=do_export) {"Export"}
             br
             input(bind:value=front)
@@ -199,6 +223,7 @@ fn CreatorComponent<G: Html>(ctx: Scope) -> View<G> {
                 view! {ctx,}
             })
             button(on:click=do_add) {"Add"}
+            button(on:click=do_delete_last) {"Delete Last"}
             Indexed {
                 iterable: cards,
                 view: |ctx, card| view! {ctx,
