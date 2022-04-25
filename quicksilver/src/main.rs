@@ -43,6 +43,7 @@ struct Card {
 }
 
 wasm_import!(get_token() -> Option<String>);
+wasm_import!(get_edit_token() -> Option<String>);
 wasm_import!(prompt(s: &str) -> Option<String>);
 wasm_import!(set_location(l: &str));
 wasm_import!(alert(s: &str));
@@ -82,9 +83,15 @@ fn CardsComponent<G: Html>(ctx: Scope) -> View<G> {
 
     let go_home = |_| set_location("/");
 
+    let go_modify = move |_| {
+        let location = format!("/?edit={}", token);
+        set_location(&location);
+    };
+
     view! {ctx,
         div(class="text-align-center") {
             button(on:click=go_home) { "Home" }
+            button(on:click=go_modify) { "Edit Deck" }
             button(on:click=recompute_current) { "Next" }
         }
         ({
@@ -126,6 +133,17 @@ fn CreatorComponent<G: Html>(ctx: Scope) -> View<G> {
     let error_parse = create_signal(ctx, false);
 
     let cards = create_signal(ctx, Vec::new());
+
+    if let Some(token) = get_edit_token() {
+        let stripped = token
+            .chars()
+            .filter(|c| !c.is_whitespace())
+            .collect::<String>();
+        let decoded = base64::decode(stripped.as_bytes()).unwrap_or_default();
+        let parsed = String::from_utf8(decoded).unwrap_or_default();
+        let items: Vec<Card> = serde_json::from_str(&parsed).unwrap_or_default();
+        *cards.modify() = items;
+    }
 
     let do_add = |_| {
         let f = (*front.get()).clone();
@@ -184,11 +202,11 @@ fn CreatorComponent<G: Html>(ctx: Scope) -> View<G> {
             Indexed {
                 iterable: cards,
                 view: |ctx, card| view! {ctx,
-                    div(class="card", style="background-color: white;") {
-                        "Front:"
+                    div(class="card", style="background-color: white; padding: 5px; transform: none") {
+                        "Front: "
                         (card.front)
                         br
-                        "Back:"
+                        "Back: "
                         (card.back)
                     }
                 }
