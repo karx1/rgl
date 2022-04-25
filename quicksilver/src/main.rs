@@ -81,10 +81,10 @@ fn CardsComponent<G: Html>(ctx: Scope) -> View<G> {
         elem.class_list().toggle("flip").unwrap();
     };
 
-    let go_home = |_| set_location("/");
+    let go_home = |_| set_location("?home");
 
     let go_modify = move |_| {
-        let location = format!("/?edit={}", token);
+        let location = format!("?edit={}", token);
         set_location(&location);
     };
 
@@ -140,7 +140,7 @@ fn CreatorComponent<G: Html>(ctx: Scope) -> View<G> {
                 .chars()
                 .filter(|c| !c.is_whitespace())
                 .collect::<String>();
-            let f = format!("/?deck={}", stripped);
+            let f = format!("?deck={}", stripped);
             set_location(&f);
         }
     };
@@ -193,7 +193,7 @@ fn CreatorComponent<G: Html>(ctx: Scope) -> View<G> {
         if let Ok(s) = r {
             error_parse.set(false);
             let e = base64::encode(s.as_bytes());
-            let f = format!("/?deck={}", e);
+            let f = format!("?deck={}", e);
             set_location(&f);
         } else {
             error_parse.set(true);
