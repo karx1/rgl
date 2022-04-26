@@ -52,11 +52,26 @@ wasm_import_with_ns!(console, log(s: &str));
 #[component]
 fn CardsComponent<G: Html>(ctx: Scope) -> View<G> {
     let token = get_token().unwrap();
-    let data = String::from_utf8(base64::decode(&token).unwrap()).unwrap();
-    let deck: Deck = serde_json::from_str(&data).unwrap();
-    let current = create_signal(ctx, rand::thread_rng().gen_range(0..deck.len()));
+    let error = create_signal(ctx, false);
+    let data = String::from_utf8(base64::decode(&token).unwrap_or_else(|_| {
+        error.set(true);
+        Default::default()
+    }))
+    .unwrap_or_else(|_| {
+        error.set(true);
+        Default::default()
+    });
+    let deck: Deck = serde_json::from_str(&data).unwrap_or_else(|_| {
+        error.set(true);
+        Default::default()
+    });
     log(&format!("{:#?}", *deck));
     let deck_len = deck.len();
+    let current = if deck_len > 0 {
+        create_signal(ctx, rand::thread_rng().gen_range(0..deck.len()))
+    } else {
+        create_signal(ctx, 0usize)
+    };
 
     let recompute_current = move |_| {
         let prev = *current.get();
@@ -94,8 +109,13 @@ fn CardsComponent<G: Html>(ctx: Scope) -> View<G> {
             button(on:click=go_modify) { "Edit Deck" }
             button(on:click=recompute_current) { "Next" }
         }
+        (if *error.get() {
+            view! {ctx,
+                p(style="color: red;") {"Something went wrong. Make sure your deck code is valid."}
+            }
+        } else {view!{ctx,}})
         ({
-            let current_card = deck[*current.get()].clone();
+            let current_card = deck.get(*current.get()).cloned().unwrap_or_default();
             view! {ctx,
                 div(class="card-container") {
                         h2(class="front-face") {
