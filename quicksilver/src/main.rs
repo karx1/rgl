@@ -1,6 +1,7 @@
-use rand::Rng;
+use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
 use std::ops::Deref;
+use std::ops::DerefMut;
 use sycamore::prelude::*;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
@@ -36,6 +37,12 @@ impl Deref for Deck {
     }
 }
 
+impl DerefMut for Deck {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 struct Card {
     front: String,
@@ -65,25 +72,31 @@ fn CardsComponent<G: Html>(ctx: Scope) -> View<G> {
         error.set(true);
         Default::default()
     });
-    log(&format!("{:#?}", *deck));
     let deck_len = deck.len();
-    let current = if deck_len > 0 {
-        create_signal(ctx, rand::thread_rng().gen_range(0..deck.len()))
-    } else {
-        create_signal(ctx, 0usize)
-    };
+    let deck = create_signal(ctx, deck);
+    log(&format!("{:#?}", *deck));
+    let current = create_signal(ctx, 0usize);
 
-    let recompute_current = move |_| {
-        let prev = *current.get();
-        let mut genned = rand::thread_rng().gen_range(0..deck_len);
-        if deck_len > 1 {
-            while genned == prev {
-                genned = rand::thread_rng().gen_range(0..deck_len);
-            }
+    deck.modify().shuffle(&mut rand::thread_rng());
+
+    let decrement = move |_| {
+        let rn = *current.get();
+        if rn == 0 {
+            current.set(deck_len - 1);
+        } else {
+            *current.modify() -= 1;
         }
-
-        current.set(genned);
     };
+    let increment = move |_| {
+        let rn = *current.get();
+        if rn == (deck_len - 1) {
+            current.set(0);
+        } else {
+            *current.modify() += 1;
+        }
+    };
+
+    let reshuffle = |_| deck.modify().shuffle(&mut rand::thread_rng());
 
     let on_click = |event: Event| {
         let elem = event
@@ -107,7 +120,10 @@ fn CardsComponent<G: Html>(ctx: Scope) -> View<G> {
         div(class="text-align-center") {
             button(on:click=go_home) { "Home" }
             button(on:click=go_modify) { "Edit Deck" }
-            button(on:click=recompute_current) { "Next" }
+            br
+            button(on:click=decrement) {"Prev"}
+            button(on:click=reshuffle) {"Reshuffle"}
+            button(on:click=increment) { "Next" }
         }
         (if *error.get() {
             view! {ctx,
@@ -115,7 +131,7 @@ fn CardsComponent<G: Html>(ctx: Scope) -> View<G> {
             }
         } else {view!{ctx,}})
         ({
-            let current_card = deck.get(*current.get()).cloned().unwrap_or_default();
+            let current_card = deck.get().get(*current.get()).cloned().unwrap_or_default();
             view! {ctx,
                 div(class="card-container") {
                         h2(class="front-face") {
