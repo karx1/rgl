@@ -55,10 +55,26 @@ wasm_import!(prompt(s: &str) -> Option<String>);
 wasm_import!(set_location(l: &str));
 wasm_import!(alert(s: &str));
 wasm_import_with_ns!(console, log(s: &str));
+wasm_import_with_ns!(localStorage, setItem(key: &str, value: &str));
+wasm_import_with_ns!(localStorage, getItem(key: &str) -> Option<String>);
 
 #[component]
 fn CardsComponent<G: Html>(ctx: Scope) -> View<G> {
     let token = get_token().unwrap();
+    {
+        let prev = getItem("history").unwrap_or_else(|| String::from("[]"));
+        let mut history: Vec<String> = serde_json::from_str(&prev).unwrap_or_default();
+        history.push(token.clone());
+        history.sort_unstable();
+        history.dedup();
+        let sliced = if history.len() > 5 {
+            &history[history.len() - 5..]
+        } else {
+            &history[..]
+        };
+        let s = serde_json::to_string(sliced).unwrap();
+        setItem("history", &s);
+    }
     let error = create_signal(ctx, false);
     let data = String::from_utf8(base64::decode(&token).unwrap_or_else(|_| {
         error.set(true);
