@@ -51,6 +51,7 @@ input {
     transform-style: preserve-3d;
     transition: transform .5s;
     background-color: blue;
+    word-break: break-all;
 }
 
 .card-container {
@@ -86,5 +87,4 @@ input {
 
 .back-face {
     transform: rotateY(180deg);
-    word-break: break-all;
 }
