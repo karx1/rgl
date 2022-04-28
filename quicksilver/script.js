@@ -10,6 +10,12 @@ function get_edit_token() {
     return token;
 }
 
+function check_history() {
+    let params = new URLSearchParams(document.location.search);
+    let token = params.get("history");
+    return token != null;
+}
+
 function set_location(l) {
     window.location = l; 
 }

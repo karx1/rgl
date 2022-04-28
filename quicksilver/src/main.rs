@@ -51,6 +51,7 @@ struct Card {
 
 wasm_import!(get_token() -> Option<String>);
 wasm_import!(get_edit_token() -> Option<String>);
+wasm_import!(check_history() -> bool);
 wasm_import!(prompt(s: &str) -> Option<String>);
 wasm_import!(set_location(l: &str));
 wasm_import!(alert(s: &str));
@@ -256,10 +257,13 @@ fn CreatorComponent<G: Html>(ctx: Scope) -> View<G> {
         cards.modify().pop();
     };
 
+    let open_history = |_| set_location("?history");
+
     view! {ctx,
         div(class="text-align-center") {
             button(on:click=do_import) {"Import"}
             button(on:click=do_use_current) {"Use Current Deck"}
+            button(on:click=open_history) {"Past decks"}
             button(on:click=do_export) {"Export"}
             br
             input(bind:value=front)
@@ -292,6 +296,31 @@ fn CreatorComponent<G: Html>(ctx: Scope) -> View<G> {
     }
 }
 
+#[component]
+fn HistoryComponent<G: Html>(ctx: Scope) -> View<G> {
+    let history = create_signal(ctx, {
+        let prev = getItem("history").unwrap_or_else(|| String::from("[]"));
+        let parsed: Vec<String> = serde_json::from_str(&prev).unwrap_or_default();
+        parsed
+    });
+
+    let go_home = |_| set_location("?home");
+
+    view! {ctx,
+        div(class="text-align-center") {
+            button(on:click=go_home) {"Home"}
+        }
+        Indexed {
+            iterable: history,
+            view: |ctx, item| view!{ctx,
+                div(class="card", style="background-color: white; padding: 5px; transform: none; word-break: break-all ") {
+                    (item)
+                }
+            }
+        }
+    }
+}
+
 fn main() {
     console_error_panic_hook::set_once();
     sycamore::render(|ctx| {
@@ -300,6 +329,8 @@ fn main() {
                 h1(class="text-align-center") { "Quicksilver" }
                 (if get_token().is_some() {
                     view! {ctx, CardsComponent {}}
+                } else if check_history() {
+                    view! {ctx, HistoryComponent {}}
                 } else {
                     view! {ctx, CreatorComponent {}}
                 })
